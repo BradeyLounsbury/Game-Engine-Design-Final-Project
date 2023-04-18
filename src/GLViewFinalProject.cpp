@@ -151,10 +151,37 @@ void Aftr::GLViewFinalProject::loadMap()
 
    this->cam->setPosition( 15,15,10 );
 
-   std::string shinyRedPlasticCube( ManagerEnvironmentConfiguration::getSMM() + "/models/cube4x4x4redShinyPlastic_pp.wrl" );
-   std::string wheeledCar( ManagerEnvironmentConfiguration::getSMM() + "/models/rcx_treads.wrl" );
    std::string grass( ManagerEnvironmentConfiguration::getSMM() + "/models/grassFloor400x400_pp.wrl" );
-   std::string human( ManagerEnvironmentConfiguration::getSMM() + "/models/human_chest.wrl" );
+   std::string snowboard(ManagerEnvironmentConfiguration::getLMM() + "/models/snowboard/10535_Snowboard_v1_L3.obj");
+   std::string griff(ManagerEnvironmentConfiguration::getLMM() + "/models/griff/griff.obj");
+
+   WO* snowboardWO = WO::New(snowboard, Vector(0.1,0.1,0.1), MESH_SHADING_TYPE::mstFLAT);
+   snowboardWO->setPosition(0, 0, 10);
+   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+   snowboardWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
+   snowboardWO->upon_async_model_loaded([snowboardWO]()
+       {
+           ModelMeshSkin& snowboardSkin = snowboardWO->getModel()->getModelDataShared()->getModelMeshes().at(0)->getSkins().at(0);
+           snowboardSkin.setAmbient(aftrColor4f(1.0f, 1.0f, 1.0f, 1.0f)); //Color of object when it is not in any light
+           snowboardSkin.setDiffuse(aftrColor4f(1.0f, 1.0f, 1.0f, 1.0f)); //Diffuse color components (ie, matte shading color of this object)
+           snowboardSkin.setSpecular(aftrColor4f(0.4f, 0.4f, 0.4f, 1.0f)); //Specular color component (ie, how "shiney" it is)
+           snowboardSkin.setSpecularCoefficient(10); // How "sharp" are the specular highlights (bigger is sharper, 1000 is very sharp, 10 is very dull)
+       });
+   this->worldLst->push_back(snowboardWO);
+
+   WO* griffWO = WO::New(griff, Vector(0.07, 0.07, 0.07), MESH_SHADING_TYPE::mstFLAT);
+   griffWO->setPosition(0, 0, 16);
+   griffWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+   griffWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
+   griffWO->upon_async_model_loaded([griffWO]()
+       {
+           ModelMeshSkin& griffSkin = griffWO->getModel()->getModelDataShared()->getModelMeshes().at(0)->getSkins().at(0);
+           griffSkin.setAmbient(aftrColor4f(1.0f, 1.0f, 1.0f, 1.0f)); //Color of object when it is not in any light
+           griffSkin.setDiffuse(aftrColor4f(1.0f, 1.0f, 1.0f, 1.0f)); //Diffuse color components (ie, matte shading color of this object)
+           griffSkin.setSpecular(aftrColor4f(0.4f, 0.4f, 0.4f, 1.0f)); //Specular color component (ie, how "shiney" it is)
+           griffSkin.setSpecularCoefficient(10); // How "sharp" are the specular highlights (bigger is sharper, 1000 is very sharp, 10 is very dull)
+       });
+   this->worldLst->push_back(griffWO);
    
    //SkyBox Textures readily available
    std::vector< std::string > skyBoxImageNames; //vector to store texture paths
@@ -315,16 +342,7 @@ void Aftr::GLViewFinalProject::loadMap()
    //Make a Dear Im Gui instance via the WOImGui in the engine... This calls
    //the default Dear ImGui demo that shows all the features... To create your own,
    //inherit from WOImGui and override WOImGui::drawImGui_for_this_frame(...) (among any others you need).
-   WOImGui* gui = WOImGui::New( nullptr );
-   gui->setLabel( "My Gui" );
-   gui->subscribe_drawImGuiWidget(
-      [this, gui]() //this is a lambda, the capture clause is in [], the input argument list is in (), and the body is in {}
-      {
-         ImGui::ShowDemoWindow(); //Displays the default ImGui demo from C:/repos/aburn/engine/src/imgui_implot/implot_demo.cpp
-         WOImGui::draw_AftrImGui_Demo( gui ); //Displays a small Aftr Demo from C:/repos/aburn/engine/src/aftr/WOImGui.cpp
-         ImPlot::ShowDemoWindow(); //Displays the ImPlot demo using ImGui from C:/repos/aburn/engine/src/imgui_implot/implot_demo.cpp
-      } );
-   this->worldLst->push_back( gui );
+   
 
    createFinalProjectWayPoints();
 }
