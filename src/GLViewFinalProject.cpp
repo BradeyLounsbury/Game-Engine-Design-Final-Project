@@ -91,6 +91,20 @@ void GLViewFinalProject::updateWorld()
    GLView::updateWorld(); //Just call the parent's update world first.
                           //If you want to add additional functionality, do it after
                           //this call.
+   if (gameIsRunning) {
+       Vector camPos = this->cam->getPosition();
+       Vector camLook = this->cam->getLookDirection();
+       std::cout << "Cam Pos: " << camPos.at(0) << "," << camPos.at(1) << "," << camPos.at(2) << "\n";
+       std::cout << "Cam Look: " << camLook.at(0) << "," << camLook.at(1) << "," << camLook.at(2) << "\n";
+       this->cam->setPosition(camPos.at(0)+0.5, camPos.at(1), 10);
+
+       camPos = this->cam->getPosition();
+
+       snowboardWO->setPosition(camPos.at(0)+20, camPos.at(1)-3, snowboardWO->getPosition().at(2));
+       Vector boardPos = snowboardWO->getPosition();
+
+       griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2)+5.5);
+   }
 }
 
 
@@ -126,7 +140,10 @@ void GLViewFinalProject::onKeyDown( const SDL_KeyboardEvent& key )
 
    if( key.keysym.sym == SDLK_1 )
    {
-
+       gameIsRunning = true;
+       //this->cam->setCameraLookDirection(Vector(1.0, 0.0, 0.0));
+       this->cam->setPosition(-20, 3, 8);
+       //this->cam->setCameraLookDirection(Vector(0, 0, 0));
    }
 }
 
@@ -149,46 +166,34 @@ void Aftr::GLViewFinalProject::loadMap()
    Axes::isVisible = true;
    this->glRenderer->isUsingShadowMapping( false ); //set to TRUE to enable shadow mapping, must be using GL 3.2+
 
-   this->cam->setPosition( 15,15,10 );
+   this->cam->setPosition(-20, 3, 8);
 
-   std::string grass( ManagerEnvironmentConfiguration::getSMM() + "/models/grassFloor400x400_pp.wrl" );
    std::string snowboard(ManagerEnvironmentConfiguration::getLMM() + "/models/snowboard/10535_Snowboard_v1_L3.obj");
    std::string griff(ManagerEnvironmentConfiguration::getLMM() + "/models/griff/griff.obj");
 
-   WO* snowboardWO = WO::New(snowboard, Vector(0.1,0.1,0.1), MESH_SHADING_TYPE::mstFLAT);
-   snowboardWO->setPosition(0, 0, 10);
+   snowboardWO = WO::New(snowboard, Vector(0.1,0.1,0.1), MESH_SHADING_TYPE::mstFLAT);
+   snowboardWO->setPosition(0, 0, 1);
    snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+   snowboardWO->rotateAboutGlobalZ(DEGtoRAD * 90);
    snowboardWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
-   snowboardWO->upon_async_model_loaded([snowboardWO]()
-       {
-           ModelMeshSkin& snowboardSkin = snowboardWO->getModel()->getModelDataShared()->getModelMeshes().at(0)->getSkins().at(0);
-           snowboardSkin.setAmbient(aftrColor4f(1.0f, 1.0f, 1.0f, 1.0f)); //Color of object when it is not in any light
-           snowboardSkin.setDiffuse(aftrColor4f(1.0f, 1.0f, 1.0f, 1.0f)); //Diffuse color components (ie, matte shading color of this object)
-           snowboardSkin.setSpecular(aftrColor4f(0.4f, 0.4f, 0.4f, 1.0f)); //Specular color component (ie, how "shiney" it is)
-           snowboardSkin.setSpecularCoefficient(10); // How "sharp" are the specular highlights (bigger is sharper, 1000 is very sharp, 10 is very dull)
-       });
+   
    this->worldLst->push_back(snowboardWO);
 
-   WO* griffWO = WO::New(griff, Vector(0.07, 0.07, 0.07), MESH_SHADING_TYPE::mstFLAT);
-   griffWO->setPosition(0, 0, 16);
-   griffWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+   griffWO = WO::New(griff, Vector(0.07, 0.07, 0.07), MESH_SHADING_TYPE::mstFLAT);
+   griffWO->setPosition(0, 0, 6.5);
+   //griffWO->rotateAboutGlobalZ(DEGtoRAD * -90);
    griffWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
-   griffWO->upon_async_model_loaded([griffWO]()
-       {
-           ModelMeshSkin& griffSkin = griffWO->getModel()->getModelDataShared()->getModelMeshes().at(0)->getSkins().at(0);
-           griffSkin.setAmbient(aftrColor4f(1.0f, 1.0f, 1.0f, 1.0f)); //Color of object when it is not in any light
-           griffSkin.setDiffuse(aftrColor4f(1.0f, 1.0f, 1.0f, 1.0f)); //Diffuse color components (ie, matte shading color of this object)
-           griffSkin.setSpecular(aftrColor4f(0.4f, 0.4f, 0.4f, 1.0f)); //Specular color component (ie, how "shiney" it is)
-           griffSkin.setSpecularCoefficient(10); // How "sharp" are the specular highlights (bigger is sharper, 1000 is very sharp, 10 is very dull)
-       });
+  
    this->worldLst->push_back(griffWO);
+
+  
    
    //SkyBox Textures readily available
    std::vector< std::string > skyBoxImageNames; //vector to store texture paths
    //skyBoxImageNames.push_back( ManagerEnvironmentConfiguration::getSMM() + "/images/skyboxes/sky_water+6.jpg" );
    //skyBoxImageNames.push_back( ManagerEnvironmentConfiguration::getSMM() + "/images/skyboxes/sky_dust+6.jpg" );
-   skyBoxImageNames.push_back( ManagerEnvironmentConfiguration::getSMM() + "/images/skyboxes/sky_mountains+6.jpg" );
-   //skyBoxImageNames.push_back( ManagerEnvironmentConfiguration::getSMM() + "/images/skyboxes/sky_winter+6.jpg" );
+   //skyBoxImageNames.push_back( ManagerEnvironmentConfiguration::getSMM() + "/images/skyboxes/sky_mountains+6.jpg" );
+   skyBoxImageNames.push_back( ManagerEnvironmentConfiguration::getSMM() + "/images/skyboxes/sky_winter+6.jpg" );
    //skyBoxImageNames.push_back( ManagerEnvironmentConfiguration::getSMM() + "/images/skyboxes/early_morning+6.jpg" );
    //skyBoxImageNames.push_back( ManagerEnvironmentConfiguration::getSMM() + "/images/skyboxes/sky_afternoon+6.jpg" );
    //skyBoxImageNames.push_back( ManagerEnvironmentConfiguration::getSMM() + "/images/skyboxes/sky_cloudy+6.jpg" );
@@ -231,24 +236,6 @@ void Aftr::GLViewFinalProject::loadMap()
       wo->setPosition( Vector( 0, 0, 0 ) );
       wo->setLabel( "Sky Box" );
       wo->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
-      worldLst->push_back( wo );
-   }
-
-   { 
-      ////Create the infinite grass plane (the floor)
-      WO* wo = WO::New( grass, Vector( 1, 1, 1 ), MESH_SHADING_TYPE::mstFLAT );
-      wo->setPosition( Vector( 0, 0, 0 ) );
-      wo->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
-      wo->upon_async_model_loaded( [wo]()
-         {
-            ModelMeshSkin& grassSkin = wo->getModel()->getModelDataShared()->getModelMeshes().at( 0 )->getSkins().at( 0 );
-            grassSkin.getMultiTextureSet().at( 0 ).setTexRepeats( 5.0f );
-            grassSkin.setAmbient( aftrColor4f( 0.4f, 0.4f, 0.4f, 1.0f ) ); //Color of object when it is not in any light
-            grassSkin.setDiffuse( aftrColor4f( 1.0f, 1.0f, 1.0f, 1.0f ) ); //Diffuse color components (ie, matte shading color of this object)
-            grassSkin.setSpecular( aftrColor4f( 0.4f, 0.4f, 0.4f, 1.0f ) ); //Specular color component (ie, how "shiney" it is)
-            grassSkin.setSpecularCoefficient( 10 ); // How "sharp" are the specular highlights (bigger is sharper, 1000 is very sharp, 10 is very dull)
-         } );
-      wo->setLabel( "Grass" );
       worldLst->push_back( wo );
    }
 
@@ -345,6 +332,8 @@ void Aftr::GLViewFinalProject::loadMap()
    
 
    createFinalProjectWayPoints();
+
+   initChunks();
 }
 
 
@@ -358,4 +347,62 @@ void GLViewFinalProject::createFinalProjectWayPoints()
    WOWayPointSpherical* wayPt = WOWayPointSpherical::New( params, 3 );
    wayPt->setPosition( Vector( 50, 0, 3 ) );
    worldLst->push_back( wayPt );
+}
+
+void GLViewFinalProject::initChunks() {
+    std::string ground(ManagerEnvironmentConfiguration::getLMM() + "/models/terrain/snowplane.wrl");
+
+    for (int i = 0; i < 3; i++) {
+        WO* plane = WO::New(ground, Vector(1, 1, 1), MESH_SHADING_TYPE::mstFLAT);
+        int planeID = plane->getID();
+        if (terrainPlanes.size() > 0) { // use last planes pos
+            WO* lastChunk = worldLst->getWOByID(terrainPlanes.at(terrainPlanes.size() - 1));
+            int xPosChunk = lastChunk->getPosition().at(0);
+            plane->setPosition(Vector(xPosChunk+400, 0, 0)); // 400 apart interval is fine
+        }
+        else plane->setPosition(Vector(0, 0, 0));
+        plane->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
+        plane->upon_async_model_loaded([plane]()
+            {
+                ModelMeshSkin& groundSkin = plane->getModel()->getModelDataShared()->getModelMeshes().at(0)->getSkins().at(0);
+                groundSkin.getMultiTextureSet().at(0).setTexRepeats(5.0f);
+                groundSkin.setAmbient(aftrColor4f(0.4f, 0.4f, 0.4f, 1.0f)); //Color of object when it is not in any light
+                groundSkin.setDiffuse(aftrColor4f(1.0f, 1.0f, 1.0f, 1.0f)); //Diffuse color components (ie, matte shading color of this object)
+                groundSkin.setSpecular(aftrColor4f(0.4f, 0.4f, 0.4f, 1.0f)); //Specular color component (ie, how "shiney" it is)
+                groundSkin.setSpecularCoefficient(10); // How "sharp" are the specular highlights (bigger is sharper, 1000 is very sharp, 10 is very dull)
+            });
+        worldLst->push_back(plane);
+        terrainPlanes.push_back(planeID);
+        addChunksObjs(planeID);
+    }
+
+}
+
+void GLViewFinalProject::loadNewChunk() {
+
+}
+
+void GLViewFinalProject::deleteChunk(int ID) {
+
+}
+
+void GLViewFinalProject::addChunksObjs(int ID) {
+    std::string tree(ManagerEnvironmentConfiguration::getLMM() + "/models/terrain/lowpolytree.obj");
+    WO* plane = worldLst->getWOByID(ID);
+    Vector planePos = plane->getPosition();
+    srand(time(0));
+
+    for (int i = 0; i < 80; i++) {
+        int treeScale = (rand() % 3) + 6;
+        WO* treeWO = WO::New(tree, Vector(treeScale, treeScale, treeScale), MESH_SHADING_TYPE::mstFLAT);
+        if (i % 2 == 0) treeWO->setPosition(planePos.at(0) + ((rand() % 401) - 200), planePos.at(1) + ((rand() % 131) + 70), planePos.at(2) + 7); // left side trees
+        else treeWO->setPosition(planePos.at(0) + ((rand() % 401) - 200), planePos.at(1) + ((rand() % 131) - 200), planePos.at(2) + 7); // right side trees
+        treeWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
+        terrainWOs[ID].push_back(treeWO->getID()); // trees to terrain list
+        worldLst->push_back(treeWO);
+    }
+}
+
+bool GLViewFinalProject::isNewRender() {
+    return true;
 }
