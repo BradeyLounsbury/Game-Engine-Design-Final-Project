@@ -94,9 +94,9 @@ void GLViewFinalProject::updateWorld()
    if (gameIsRunning) {
        Vector camPos = this->cam->getPosition();
        Vector camLook = this->cam->getLookDirection();
-       std::cout << "Cam Pos: " << camPos.at(0) << "," << camPos.at(1) << "," << camPos.at(2) << "\n";
-       std::cout << "Cam Look: " << camLook.at(0) << "," << camLook.at(1) << "," << camLook.at(2) << "\n";
-       this->cam->setPosition(camPos.at(0)+0.5, camPos.at(1), 10);
+       //std::cout << "Cam Pos: " << camPos.at(0) << "," << camPos.at(1) << "," << camPos.at(2) << "\n";
+       //std::cout << "Cam Look: " << camLook.at(0) << "," << camLook.at(1) << "," << camLook.at(2) << "\n";
+       this->cam->setPosition(camPos.at(0) + 1.5, camPos.at(1), 10);
 
        camPos = this->cam->getPosition();
 
@@ -104,6 +104,10 @@ void GLViewFinalProject::updateWorld()
        Vector boardPos = snowboardWO->getPosition();
 
        griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2)+5.5);
+   }
+   if (isNewRender()) {
+       loadNewChunk();
+       deleteOldChunk();
    }
 }
 
@@ -352,7 +356,7 @@ void GLViewFinalProject::createFinalProjectWayPoints()
 void GLViewFinalProject::initChunks() {
     std::string ground(ManagerEnvironmentConfiguration::getLMM() + "/models/terrain/snowplane.wrl");
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 5; i++) {
         WO* plane = WO::New(ground, Vector(1, 1, 1), MESH_SHADING_TYPE::mstFLAT);
         int planeID = plane->getID();
         if (terrainPlanes.size() > 0) { // use last planes pos
@@ -362,15 +366,15 @@ void GLViewFinalProject::initChunks() {
         }
         else plane->setPosition(Vector(0, 0, 0));
         plane->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
-        plane->upon_async_model_loaded([plane]()
-            {
-                ModelMeshSkin& groundSkin = plane->getModel()->getModelDataShared()->getModelMeshes().at(0)->getSkins().at(0);
-                groundSkin.getMultiTextureSet().at(0).setTexRepeats(5.0f);
-                groundSkin.setAmbient(aftrColor4f(0.4f, 0.4f, 0.4f, 1.0f)); //Color of object when it is not in any light
-                groundSkin.setDiffuse(aftrColor4f(1.0f, 1.0f, 1.0f, 1.0f)); //Diffuse color components (ie, matte shading color of this object)
-                groundSkin.setSpecular(aftrColor4f(0.4f, 0.4f, 0.4f, 1.0f)); //Specular color component (ie, how "shiney" it is)
-                groundSkin.setSpecularCoefficient(10); // How "sharp" are the specular highlights (bigger is sharper, 1000 is very sharp, 10 is very dull)
-            });
+        //plane->upon_async_model_loaded([plane]()
+        //    {
+        //        ModelMeshSkin& groundSkin = plane->getModel()->getModelDataShared()->getModelMeshes().at(0)->getSkins().at(0);
+        //        groundSkin.getMultiTextureSet().at(0).setTexRepeats(5.0f);
+        //        groundSkin.setAmbient(aftrColor4f(0.4f, 0.4f, 0.4f, 1.0f)); //Color of object when it is not in any light
+        //        groundSkin.setDiffuse(aftrColor4f(1.0f, 1.0f, 1.0f, 1.0f)); //Diffuse color components (ie, matte shading color of this object)
+        //        groundSkin.setSpecular(aftrColor4f(0.4f, 0.4f, 0.4f, 1.0f)); //Specular color component (ie, how "shiney" it is)
+        //        groundSkin.setSpecularCoefficient(10); // How "sharp" are the specular highlights (bigger is sharper, 1000 is very sharp, 10 is very dull)
+        //    });
         worldLst->push_back(plane);
         terrainPlanes.push_back(planeID);
         addChunksObjs(planeID);
@@ -379,11 +383,48 @@ void GLViewFinalProject::initChunks() {
 }
 
 void GLViewFinalProject::loadNewChunk() {
+    std::cout << "Loading New Chunk..." << "\n";
+    std::string ground(ManagerEnvironmentConfiguration::getLMM() + "/models/terrain/snowplane.wrl");
 
+    WO* plane = WO::New(ground, Vector(1, 1, 1), MESH_SHADING_TYPE::mstFLAT);
+    int planeID = plane->getID();
+    WO* lastChunk = worldLst->getWOByID(terrainPlanes.at(terrainPlanes.size() - 1));
+    int xPosChunk = lastChunk->getPosition().at(0);
+    plane->setPosition(Vector(xPosChunk + 400, 0, 0)); // 400 apart interval is fine
+    plane->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
+    //plane->upon_async_model_loaded([plane]()
+    //    {
+    //        ModelMeshSkin& groundSkin = plane->getModel()->getModelDataShared()->getModelMeshes().at(0)->getSkins().at(0);
+    //groundSkin.getMultiTextureSet().at(0).setTexRepeats(5.0f);
+    //groundSkin.setAmbient(aftrColor4f(0.4f, 0.4f, 0.4f, 1.0f)); //Color of object when it is not in any light
+    //groundSkin.setDiffuse(aftrColor4f(1.0f, 1.0f, 1.0f, 1.0f)); //Diffuse color components (ie, matte shading color of this object)
+    //groundSkin.setSpecular(aftrColor4f(0.4f, 0.4f, 0.4f, 1.0f)); //Specular color component (ie, how "shiney" it is)
+    //groundSkin.setSpecularCoefficient(10); // How "sharp" are the specular highlights (bigger is sharper, 1000 is very sharp, 10 is very dull)
+    //    });
+    worldLst->push_back(plane);
+    terrainPlanes.push_back(planeID);
+    addChunksObjs(planeID);    
 }
 
-void GLViewFinalProject::deleteChunk(int ID) {
+void GLViewFinalProject::deleteOldChunk() {
+    std::cout << "Deleting Old Chunk..." << "\n";
 
+    WO * temp = worldLst->getWOByID(terrainPlanes.at(0)); // erase old plane
+    worldLst->eraseViaWOptr(temp);
+    temp->~WO();
+
+    for (int i = 0; i < terrainWOs[terrainPlanes.at(0)].size(); i++) { // erase old trees
+        WO* temp = worldLst->getWOByID(terrainWOs[terrainPlanes.at(0)].at(i));
+        worldLst->eraseViaWOptr(temp);
+        temp->~WO();
+    }
+
+    while (terrainWOs[terrainPlanes.at(0)].size() > 0) terrainWOs[terrainPlanes.at(0)].pop_back(); // erase mapping for old chunk WO's
+
+    for (int i = 0; i < terrainPlanes.size() - 1; i++) {
+        terrainPlanes.at(i) = terrainPlanes.at(i + 1);
+    }
+    terrainPlanes.pop_back();
 }
 
 void GLViewFinalProject::addChunksObjs(int ID) {
@@ -392,7 +433,7 @@ void GLViewFinalProject::addChunksObjs(int ID) {
     Vector planePos = plane->getPosition();
     srand(time(0));
 
-    for (int i = 0; i < 80; i++) {
+    for (int i = 0; i < 50; i++) {
         int treeScale = (rand() % 3) + 6;
         WO* treeWO = WO::New(tree, Vector(treeScale, treeScale, treeScale), MESH_SHADING_TYPE::mstFLAT);
         if (i % 2 == 0) treeWO->setPosition(planePos.at(0) + ((rand() % 401) - 200), planePos.at(1) + ((rand() % 131) + 70), planePos.at(2) + 7); // left side trees
@@ -404,5 +445,6 @@ void GLViewFinalProject::addChunksObjs(int ID) {
 }
 
 bool GLViewFinalProject::isNewRender() {
-    return true;
+    WO* oldChunk = worldLst->getWOByID(terrainPlanes.at(1));
+    return this->cam->getPosition().at(0) > oldChunk->getPosition().at(0);
 }

@@ -34,7 +34,7 @@ public:
    virtual void onKeyUp( const SDL_KeyboardEvent& key );
    void initChunks();
    void loadNewChunk();
-   void deleteChunk(int ID);
+   void deleteOldChunk();
    void addChunksObjs(int ID);
    bool isNewRender();
 
