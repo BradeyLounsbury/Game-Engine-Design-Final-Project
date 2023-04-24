@@ -167,7 +167,7 @@ void Aftr::GLViewFinalProject::loadMap()
    ManagerOpenGLState::GL_CLIPPING_PLANE = 1000.0;
    ManagerOpenGLState::GL_NEAR_PLANE = 0.1f;
    ManagerOpenGLState::enableFrustumCulling = false;
-   Axes::isVisible = true;
+   Axes::isVisible = false;
    this->glRenderer->isUsingShadowMapping( false ); //set to TRUE to enable shadow mapping, must be using GL 3.2+
 
    this->cam->setPosition(-20, 3, 8);
@@ -335,7 +335,6 @@ void Aftr::GLViewFinalProject::loadMap()
    //inherit from WOImGui and override WOImGui::drawImGui_for_this_frame(...) (among any others you need).
    
 
-   createFinalProjectWayPoints();
 
    initChunks();
 }
