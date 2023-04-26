@@ -32,10 +32,20 @@ public:
    virtual void onMouseMove( const SDL_MouseMotionEvent& e );
    virtual void onKeyDown( const SDL_KeyboardEvent& key );
    virtual void onKeyUp( const SDL_KeyboardEvent& key );
+   void initChunks();
+   void updateTerrain();
+   void addChunksObjs(int ID);
+   bool isNewRender();
 
 protected:
    GLViewFinalProject( const std::vector< std::string >& args );
    virtual void onCreate();   
+
+   std::vector<int> terrainPlanes;
+   std::map<int, std::vector<int>> terrainWOs;
+   bool gameIsRunning = false;
+   WO* snowboardWO;
+   WO* griffWO;
 };
 
 /** \} */
