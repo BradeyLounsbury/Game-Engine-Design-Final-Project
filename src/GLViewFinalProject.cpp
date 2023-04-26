@@ -169,6 +169,8 @@ void Aftr::GLViewFinalProject::loadMap()
    Axes::isVisible = false;
    this->glRenderer->isUsingShadowMapping( false ); //set to TRUE to enable shadow mapping, must be using GL 3.2+
 
+   this->cam->setPosition(-20, 3, 1008);
+
    std::string snowboard(ManagerEnvironmentConfiguration::getLMM() + "/models/snowboard/10535_Snowboard_v1_L3.obj");
    std::string griff(ManagerEnvironmentConfiguration::getLMM() + "/models/griff/griff.obj");
 
@@ -334,7 +336,6 @@ void Aftr::GLViewFinalProject::loadMap()
 
 
    initChunks();
-   this->cam->setPosition(-20, 3, 1008);
 }
 
 
