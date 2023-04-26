@@ -35,6 +35,7 @@ public:
    void initChunks();
    void loadNewChunk();
    void deleteOldChunk();
+   void updateTerrain();
    void addChunksObjs(int ID);
    bool isNewRender();
 

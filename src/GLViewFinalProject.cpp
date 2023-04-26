@@ -106,8 +106,9 @@ void GLViewFinalProject::updateWorld()
        griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2)+5.5);
    }
    if (isNewRender()) {
-       loadNewChunk();
-       deleteOldChunk();
+       //loadNewChunk();
+       //deleteOldChunk();
+       updateTerrain();
    }
 }
 
@@ -424,6 +425,30 @@ void GLViewFinalProject::deleteOldChunk() {
         terrainPlanes.at(i) = terrainPlanes.at(i + 1);
     }
     terrainPlanes.pop_back();
+}
+
+void GLViewFinalProject::updateTerrain() {
+    WO* oldestPlane = worldLst->getWOByID(terrainPlanes.at(0)); // grab chunk furthest behind camera
+    WO* newestPlane = worldLst->getWOByID(terrainPlanes.at(terrainPlanes.size()-1)); // grab chunk furthest ahead camera
+
+    int xPosChunk = newestPlane->getPosition().at(0);
+    oldestPlane->setPosition(Vector(xPosChunk + 400, 0, 0)); 
+    Vector planePos = oldestPlane->getPosition();
+
+    srand(time(0));
+
+    for (int i = 0; i < terrainWOs[terrainPlanes.at(0)].size(); i++) { // shift furthest back trees to forward most plane
+        WO* treeWO = worldLst->getWOByID(terrainWOs[terrainPlanes.at(0)].at(i));
+        if (i % 2 == 0) treeWO->setPosition(planePos.at(0) + ((rand() % 401) - 200), planePos.at(1) + ((rand() % 131) + 70), planePos.at(2) + 7); // left side trees
+        else treeWO->setPosition(planePos.at(0) + ((rand() % 401) - 200), planePos.at(1) + ((rand() % 131) - 200), planePos.at(2) + 7); // right side trees
+    }
+
+    int oldestPlaneID = terrainPlanes.at(0);
+
+    for (int i = 0; i < terrainPlanes.size() - 1; i++) { // update terrain plain ID vector to match new positionings
+        terrainPlanes.at(i) = terrainPlanes.at(i + 1);
+    }
+    terrainPlanes.at(terrainPlanes.size() - 1) = oldestPlaneID;
 }
 
 void GLViewFinalProject::addChunksObjs(int ID) {
