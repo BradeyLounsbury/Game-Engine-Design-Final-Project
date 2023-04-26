@@ -169,7 +169,7 @@ void Aftr::GLViewFinalProject::loadMap()
    Axes::isVisible = false;
    this->glRenderer->isUsingShadowMapping( false ); //set to TRUE to enable shadow mapping, must be using GL 3.2+
 
-   this->cam->setPosition(-20, 3, 1008);
+   this->cam->setPosition(-20, 3, 8);
 
    std::string snowboard(ManagerEnvironmentConfiguration::getLMM() + "/models/snowboard/10535_Snowboard_v1_L3.obj");
    std::string griff(ManagerEnvironmentConfiguration::getLMM() + "/models/griff/griff.obj");
@@ -178,14 +178,16 @@ void Aftr::GLViewFinalProject::loadMap()
    snowboardWO->setPosition(0, 0, 1);
    snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
    snowboardWO->rotateAboutGlobalZ(DEGtoRAD * 90);
+   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
    snowboardWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
    
    this->worldLst->push_back(snowboardWO);
 
    griffWO = WO::New(griff, Vector(0.07, 0.07, 0.07), MESH_SHADING_TYPE::mstFLAT);
-   griffWO->setPosition(0, 0, 1006.5);
+   griffWO->setPosition(0, 0, 6.5);
    //griffWO->rotateAboutGlobalZ(DEGtoRAD * -90);
    griffWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
+   griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
   
    this->worldLst->push_back(griffWO);
 
@@ -362,7 +364,7 @@ void GLViewFinalProject::initChunks() {
             auto lastChunkPos = lastChunk->getPosition();
             plane->setPosition(Vector(lastChunkPos[0] + 385, 0, lastChunkPos[2] - 103.2)); // 400 apart interval is fine
         }
-        else plane->setPosition(Vector(0, 0, 1000));
+        else plane->setPosition(Vector(0, 0, 0));
         plane->rotateAboutRelY(DEGtoRAD * 15);
         plane->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
         //plane->upon_async_model_loaded([plane]()
@@ -385,8 +387,8 @@ void GLViewFinalProject::updateTerrain() {
     WO* oldestPlane = worldLst->getWOByID(terrainPlanes.at(0)); // grab chunk furthest behind camera
     WO* newestPlane = worldLst->getWOByID(terrainPlanes.at(terrainPlanes.size()-1)); // grab chunk furthest ahead camera
 
-    int xPosChunk = newestPlane->getPosition().at(0);
-    oldestPlane->setPosition(Vector(xPosChunk + 400, 0, 0)); 
+    auto lastChunkPos = newestPlane->getPosition();
+    oldestPlane->setPosition(Vector(lastChunkPos[0] + 385, 0, lastChunkPos[2] - 103.2));
     Vector planePos = oldestPlane->getPosition();
 
     srand(time(0));
@@ -414,8 +416,14 @@ void GLViewFinalProject::addChunksObjs(int ID) {
     for (int i = 0; i < 50; i++) {
         int treeScale = (rand() % 3) + 6;
         WO* treeWO = WO::New(tree, Vector(treeScale, treeScale, treeScale), MESH_SHADING_TYPE::mstFLAT);
-        if (i % 2 == 0) treeWO->setPosition(planePos.at(0) + ((rand() % 401) - 200), planePos.at(1) + ((rand() % 131) + 70), planePos.at(2) + 7); // left side trees
-        else treeWO->setPosition(planePos.at(0) + ((rand() % 401) - 200), planePos.at(1) + ((rand() % 131) - 200), planePos.at(2) + 7); // right side trees
+        if (i % 2 == 0) {
+            auto xpos_modifier = ((rand() % 401) - 200);
+            treeWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) + ((rand() % 131) + 70), planePos.at(2) + 7 - xpos_modifier * 0.25); // left side trees
+        }
+        else {
+            auto xpos_modifier = ((rand() % 401) - 200);
+            treeWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) + ((rand() % 131) - 200), planePos.at(2) + 7 - xpos_modifier * 0.25); // right side trees
+        }
         treeWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
         terrainWOs[ID].push_back(treeWO->getID()); // trees to terrain list
         worldLst->push_back(treeWO);
