@@ -33,8 +33,6 @@ public:
    virtual void onKeyDown( const SDL_KeyboardEvent& key );
    virtual void onKeyUp( const SDL_KeyboardEvent& key );
    void initChunks();
-   void loadNewChunk();
-   void deleteOldChunk();
    void updateTerrain();
    void addChunksObjs(int ID);
    bool isNewRender();

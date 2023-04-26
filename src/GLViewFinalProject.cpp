@@ -106,8 +106,6 @@ void GLViewFinalProject::updateWorld()
        griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2)+5.5);
    }
    if (isNewRender()) {
-       //loadNewChunk();
-       //deleteOldChunk();
        updateTerrain();
    }
 }
@@ -380,51 +378,6 @@ void GLViewFinalProject::initChunks() {
         addChunksObjs(planeID);
     }
 
-}
-
-void GLViewFinalProject::loadNewChunk() {
-    std::cout << "Loading New Chunk..." << "\n";
-    std::string ground(ManagerEnvironmentConfiguration::getLMM() + "/models/terrain/snowplane.wrl");
-
-    WO* plane = WO::New(ground, Vector(1, 1, 1), MESH_SHADING_TYPE::mstFLAT);
-    int planeID = plane->getID();
-    WO* lastChunk = worldLst->getWOByID(terrainPlanes.at(terrainPlanes.size() - 1));
-    int xPosChunk = lastChunk->getPosition().at(0);
-    plane->setPosition(Vector(xPosChunk + 400, 0, 0)); // 400 apart interval is fine
-    plane->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
-    //plane->upon_async_model_loaded([plane]()
-    //    {
-    //        ModelMeshSkin& groundSkin = plane->getModel()->getModelDataShared()->getModelMeshes().at(0)->getSkins().at(0);
-    //groundSkin.getMultiTextureSet().at(0).setTexRepeats(5.0f);
-    //groundSkin.setAmbient(aftrColor4f(0.4f, 0.4f, 0.4f, 1.0f)); //Color of object when it is not in any light
-    //groundSkin.setDiffuse(aftrColor4f(1.0f, 1.0f, 1.0f, 1.0f)); //Diffuse color components (ie, matte shading color of this object)
-    //groundSkin.setSpecular(aftrColor4f(0.4f, 0.4f, 0.4f, 1.0f)); //Specular color component (ie, how "shiney" it is)
-    //groundSkin.setSpecularCoefficient(10); // How "sharp" are the specular highlights (bigger is sharper, 1000 is very sharp, 10 is very dull)
-    //    });
-    worldLst->push_back(plane);
-    terrainPlanes.push_back(planeID);
-    addChunksObjs(planeID);    
-}
-
-void GLViewFinalProject::deleteOldChunk() {
-    std::cout << "Deleting Old Chunk..." << "\n";
-
-    WO * temp = worldLst->getWOByID(terrainPlanes.at(0)); // erase old plane
-    worldLst->eraseViaWOptr(temp);
-    temp->~WO();
-
-    for (int i = 0; i < terrainWOs[terrainPlanes.at(0)].size(); i++) { // erase old trees
-        WO* temp = worldLst->getWOByID(terrainWOs[terrainPlanes.at(0)].at(i));
-        worldLst->eraseViaWOptr(temp);
-        temp->~WO();
-    }
-
-    while (terrainWOs[terrainPlanes.at(0)].size() > 0) terrainWOs[terrainPlanes.at(0)].pop_back(); // erase mapping for old chunk WO's
-
-    for (int i = 0; i < terrainPlanes.size() - 1; i++) {
-        terrainPlanes.at(i) = terrainPlanes.at(i + 1);
-    }
-    terrainPlanes.pop_back();
 }
 
 void GLViewFinalProject::updateTerrain() {
