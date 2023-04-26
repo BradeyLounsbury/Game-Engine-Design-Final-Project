@@ -33,6 +33,7 @@
 #include "WOImGui.h" //GUI Demos also need to #include "AftrImGuiIncludes.h"
 #include "AftrImGuiIncludes.h"
 #include "AftrGLRendererBase.h"
+#include <cmath>
 
 using namespace Aftr;
 
@@ -92,18 +93,20 @@ void GLViewFinalProject::updateWorld()
                           //If you want to add additional functionality, do it after
                           //this call.
    if (gameIsRunning) {
-       Vector camPos = this->cam->getPosition();
-       Vector camLook = this->cam->getLookDirection();
-       //std::cout << "Cam Pos: " << camPos.at(0) << "," << camPos.at(1) << "," << camPos.at(2) << "\n";
-       //std::cout << "Cam Look: " << camLook.at(0) << "," << camLook.at(1) << "," << camLook.at(2) << "\n";
-       this->cam->setPosition(camPos.at(0) + 1.5, camPos.at(1), 10);
+       //Vector camPos = this->cam->getPosition();
+       //Vector camLook = this->cam->getLookDirection();
+       ////std::cout << "Cam Pos: " << camPos.at(0) << "," << camPos.at(1) << "," << camPos.at(2) << "\n";
+       ////std::cout << "Cam Look: " << camLook.at(0) << "," << camLook.at(1) << "," << camLook.at(2) << "\n";
+       //this->cam->setPosition(camPos.at(0) + 1.5, camPos.at(1), 10);
 
-       camPos = this->cam->getPosition();
+       //camPos = this->cam->getPosition();
 
-       snowboardWO->setPosition(camPos.at(0)+20, camPos.at(1)-3, snowboardWO->getPosition().at(2));
+       //snowboardWO->moveRelative(Vector(5,0,-1.335));
+       snowboardWO->moveRelative(Vector(5, 0, -tan(DEGtoRAD * 15) * 5));
        Vector boardPos = snowboardWO->getPosition();
 
        griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2)+5.5);
+       this->cam->setPosition(boardPos[0] - 20, boardPos[1], boardPos[2] + 10);
    }
    if (isNewRender()) {
        updateTerrain();
@@ -395,8 +398,14 @@ void GLViewFinalProject::updateTerrain() {
 
     for (int i = 0; i < terrainWOs[terrainPlanes.at(0)].size(); i++) { // shift furthest back trees to forward most plane
         WO* treeWO = worldLst->getWOByID(terrainWOs[terrainPlanes.at(0)].at(i));
-        if (i % 2 == 0) treeWO->setPosition(planePos.at(0) + ((rand() % 401) - 200), planePos.at(1) + ((rand() % 131) + 70), planePos.at(2) + 7); // left side trees
-        else treeWO->setPosition(planePos.at(0) + ((rand() % 401) - 200), planePos.at(1) + ((rand() % 131) - 200), planePos.at(2) + 7); // right side trees
+        if (i % 2 == 0) {
+            auto xpos_modifier = ((rand() % 401) - 200);
+            treeWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) + ((rand() % 131) + 70), planePos.at(2) + 7 - xpos_modifier * 0.25); // left side trees
+        }
+        else {
+            auto xpos_modifier = ((rand() % 401) - 200);
+            treeWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) + ((rand() % 131) - 200), planePos.at(2) + 7 - xpos_modifier * 0.25); // right side trees
+        }
     }
 
     int oldestPlaneID = terrainPlanes.at(0);
