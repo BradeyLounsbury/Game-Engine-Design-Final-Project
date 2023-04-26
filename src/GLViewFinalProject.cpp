@@ -169,8 +169,6 @@ void Aftr::GLViewFinalProject::loadMap()
    Axes::isVisible = false;
    this->glRenderer->isUsingShadowMapping( false ); //set to TRUE to enable shadow mapping, must be using GL 3.2+
 
-   this->cam->setPosition(-20, 3, 8);
-
    std::string snowboard(ManagerEnvironmentConfiguration::getLMM() + "/models/snowboard/10535_Snowboard_v1_L3.obj");
    std::string griff(ManagerEnvironmentConfiguration::getLMM() + "/models/griff/griff.obj");
 
@@ -183,7 +181,7 @@ void Aftr::GLViewFinalProject::loadMap()
    this->worldLst->push_back(snowboardWO);
 
    griffWO = WO::New(griff, Vector(0.07, 0.07, 0.07), MESH_SHADING_TYPE::mstFLAT);
-   griffWO->setPosition(0, 0, 6.5);
+   griffWO->setPosition(0, 0, 1006.5);
    //griffWO->rotateAboutGlobalZ(DEGtoRAD * -90);
    griffWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
   
@@ -336,6 +334,7 @@ void Aftr::GLViewFinalProject::loadMap()
 
 
    initChunks();
+   this->cam->setPosition(-20, 3, 1008);
 }
 
 
@@ -359,10 +358,11 @@ void GLViewFinalProject::initChunks() {
         int planeID = plane->getID();
         if (terrainPlanes.size() > 0) { // use last planes pos
             WO* lastChunk = worldLst->getWOByID(terrainPlanes.at(terrainPlanes.size() - 1));
-            int xPosChunk = lastChunk->getPosition().at(0);
-            plane->setPosition(Vector(xPosChunk+400, 0, 0)); // 400 apart interval is fine
+            auto lastChunkPos = lastChunk->getPosition();
+            plane->setPosition(Vector(lastChunkPos[0] + 385, 0, lastChunkPos[2] - 103.2)); // 400 apart interval is fine
         }
-        else plane->setPosition(Vector(0, 0, 0));
+        else plane->setPosition(Vector(0, 0, 1000));
+        plane->rotateAboutRelY(DEGtoRAD * 15);
         plane->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
         //plane->upon_async_model_loaded([plane]()
         //    {
