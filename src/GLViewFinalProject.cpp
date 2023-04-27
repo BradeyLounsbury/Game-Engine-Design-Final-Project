@@ -166,6 +166,45 @@ void GLViewFinalProject::updateWorld()
                //this->cam->setPosition(boardPos[0] - 40, this->cam->getPosition()[1], this->cam->getPosition()[2]);
            }
        }
+       else if (isSliding) {
+           if (slideCount < 20) {
+               if (slideCount == 0) {
+                   snowboardWO->rotateAboutRelY(DEGtoRAD * 90);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * -90);
+                   griffWO->rotateAboutRelZ(DEGtoRAD * 90);
+                   //griffWO->rotateAboutRelY(DEGtoRAD * 90);
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * -90);
+               }
+               slideCount++;
+
+               snowboardWO->moveRelative(Vector(5, 0, -tan(DEGtoRAD * 15) * 5));
+               boardPos = snowboardWO->getPosition();
+               //snowboardWO->setPosition(boardPos[0], boardPos[1], boardPos[2] + 2);
+
+               griffWO->setPosition(boardPos.at(0) - 12, boardPos.at(1), boardPos.at(2) + 6);
+               this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
+               this->cam->setCameraLookAtPoint(boardPos);
+           }
+           else {
+               snowboardWO->rotateToIdentity();
+               snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+               snowboardWO->rotateAboutGlobalZ(DEGtoRAD * 90);
+               snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+               griffWO->rotateToIdentity();
+               griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+               isSliding = false;
+               slideCount = 0;
+
+               snowboardWO->moveRelative(Vector(5, 0, -tan(DEGtoRAD * 15) * 5));
+               boardPos = snowboardWO->getPosition();
+
+               griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
+               this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
+               this->cam->setCameraLookAtPoint(boardPos);
+           }        
+       }
        else {
            snowboardWO->moveRelative(Vector(5, 0, -tan(DEGtoRAD * 15) * 5));
            boardPos = snowboardWO->getPosition();
@@ -236,6 +275,13 @@ void GLViewFinalProject::onKeyDown( const SDL_KeyboardEvent& key )
        if (!isFalling) {
            jumpApex = snowboardWO->getPosition()[2] + 15;
            isJumping = true;
+       }
+   }
+
+   if (key.keysym.sym == SDLK_DOWN)
+   {
+       if (!isSliding) {
+           isSliding = true;
        }
    }
 }

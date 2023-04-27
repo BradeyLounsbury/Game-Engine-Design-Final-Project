@@ -49,7 +49,7 @@ protected:
    bool isJumping = false;
    bool isFalling = false;
    bool isSliding = false;
-   bool isDoneSliding = false;
+   int slideCount = 0;
    float jumpApex = 0;
    WO* snowboardWO;
    WO* griffWO;
