@@ -44,6 +44,10 @@ protected:
    std::vector<int> terrainPlanes;
    std::map<int, std::vector<int>> terrainWOs;
    bool gameIsRunning = false;
+   bool isMovingLeft = false;
+   bool isMovingRight = false;
+   bool isJumping = false;
+   bool isSliding = false; 
    WO* snowboardWO;
    WO* griffWO;
 };

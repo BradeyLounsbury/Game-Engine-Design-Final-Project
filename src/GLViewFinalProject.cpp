@@ -93,20 +93,38 @@ void GLViewFinalProject::updateWorld()
                           //If you want to add additional functionality, do it after
                           //this call.
    if (gameIsRunning) {
-       //Vector camPos = this->cam->getPosition();
-       //Vector camLook = this->cam->getLookDirection();
-       ////std::cout << "Cam Pos: " << camPos.at(0) << "," << camPos.at(1) << "," << camPos.at(2) << "\n";
-       ////std::cout << "Cam Look: " << camLook.at(0) << "," << camLook.at(1) << "," << camLook.at(2) << "\n";
-       //this->cam->setPosition(camPos.at(0) + 1.5, camPos.at(1), 10);
+       if (isMovingRight) {
+           snowboardWO->moveRelative(Vector(5, -2, -tan(DEGtoRAD * 15) * 5));
+           Vector boardPos = snowboardWO->getPosition();
 
-       //camPos = this->cam->getPosition();
+           griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
+           this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
+           this->cam->setCameraLookAtPoint(boardPos);
 
-       //snowboardWO->moveRelative(Vector(5,0,-1.335));
-       snowboardWO->moveRelative(Vector(5, 0, -tan(DEGtoRAD * 15) * 5));
-       Vector boardPos = snowboardWO->getPosition();
+           if (boardPos[1] == 40 || boardPos[1] == 0 || boardPos[1] == -40) {
+               isMovingRight = false;
+           }
+       }
+       else if (isMovingLeft) {
+           snowboardWO->moveRelative(Vector(5, 2, -tan(DEGtoRAD * 15) * 5));
+           Vector boardPos = snowboardWO->getPosition();
 
-       griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2)+5.5);
-       this->cam->setPosition(boardPos[0] - 20, boardPos[1], boardPos[2] + 10);
+           griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
+           this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
+           this->cam->setCameraLookAtPoint(boardPos);
+
+           if (boardPos[1] == 40 || boardPos[1] == 0 || boardPos[1] == -40) {
+               isMovingLeft = false;
+           }
+       }
+       else {
+           snowboardWO->moveRelative(Vector(5, 0, -tan(DEGtoRAD * 15) * 5));
+           Vector boardPos = snowboardWO->getPosition();
+
+           griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
+           this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
+           this->cam->setCameraLookAtPoint(boardPos);
+       }
    }
    if (isNewRender()) {
        updateTerrain();
@@ -150,6 +168,18 @@ void GLViewFinalProject::onKeyDown( const SDL_KeyboardEvent& key )
        //this->cam->setCameraLookDirection(Vector(1.0, 0.0, 0.0));
        this->cam->setPosition(-20, 3, 8);
        //this->cam->setCameraLookDirection(Vector(0, 0, 0));
+   }
+
+   if (key.keysym.sym == SDLK_RIGHT)
+   {
+       isMovingRight = true;
+       isMovingLeft = false;
+   }
+
+   if (key.keysym.sym == SDLK_LEFT)
+   {
+       isMovingLeft = true;
+       isMovingRight = false;
    }
 }
 
