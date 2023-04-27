@@ -47,7 +47,10 @@ protected:
    bool isMovingLeft = false;
    bool isMovingRight = false;
    bool isJumping = false;
-   bool isSliding = false; 
+   bool isFalling = false;
+   bool isSliding = false;
+   bool isDoneSliding = false;
+   float jumpApex = 0;
    WO* snowboardWO;
    WO* griffWO;
 };
