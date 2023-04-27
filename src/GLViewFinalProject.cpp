@@ -94,28 +94,41 @@ void GLViewFinalProject::updateWorld()
                           //this call.
    if (gameIsRunning) {
        if (isMovingRight) {
-           snowboardWO->moveRelative(Vector(5, -2, -tan(DEGtoRAD * 15) * 5));
            Vector boardPos = snowboardWO->getPosition();
-
-           griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
-           this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
-           this->cam->setCameraLookAtPoint(boardPos);
-
-           if (boardPos[1] == 40 || boardPos[1] == 0 || boardPos[1] == -40) {
+           if (boardPos[1] <= -40) {
                isMovingRight = false;
+           }
+           else {
+               snowboardWO->moveRelative(Vector(5, -2, -tan(DEGtoRAD * 15) * 5));
+               boardPos = snowboardWO->getPosition();
+
+               griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
+               this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
+               this->cam->setCameraLookAtPoint(boardPos);
+
+               if (boardPos[1] == 40 || boardPos[1] == 0 || boardPos[1] == -40) {
+                   isMovingRight = false;
+               }
            }
        }
        else if (isMovingLeft) {
-           snowboardWO->moveRelative(Vector(5, 2, -tan(DEGtoRAD * 15) * 5));
            Vector boardPos = snowboardWO->getPosition();
-
-           griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
-           this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
-           this->cam->setCameraLookAtPoint(boardPos);
-
-           if (boardPos[1] == 40 || boardPos[1] == 0 || boardPos[1] == -40) {
+           if (boardPos[1] >= 40) {
                isMovingLeft = false;
            }
+           else {
+               snowboardWO->moveRelative(Vector(5, 2, -tan(DEGtoRAD * 15) * 5));
+               boardPos = snowboardWO->getPosition();
+
+               griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
+               this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
+               this->cam->setCameraLookAtPoint(boardPos);
+
+               if (boardPos[1] == 0 || boardPos[1] == -40) {
+                   isMovingLeft = false;
+               }
+           }
+           
        }
        else {
            snowboardWO->moveRelative(Vector(5, 0, -tan(DEGtoRAD * 15) * 5));
