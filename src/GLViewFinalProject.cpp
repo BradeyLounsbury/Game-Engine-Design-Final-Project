@@ -142,6 +142,8 @@ void GLViewFinalProject::updateWorld()
        
        if (isJumping) {
            std::cout << "isJumping\n" << boardPos[2] << " == " << jumpApex << std::endl;
+           if (isSliding) slideCount = 20;
+
            if (boardPos[2] >= jumpApex) {
                std::cout << "reached apex\n";
                isJumping = false;
@@ -159,6 +161,9 @@ void GLViewFinalProject::updateWorld()
        }
        else if (isFalling) {
            std::cout << "isFalling\n";
+
+           if (isSliding) slideCount = 20;
+
            WO* plane = worldLst->getWOByID(terrainPlanes[0]);
            Vector planePos = plane->getPosition();
            float boardDistFromCenter = planePos[0] - boardPos[0];
@@ -178,7 +183,8 @@ void GLViewFinalProject::updateWorld()
                //this->cam->setPosition(boardPos[0] - 40, this->cam->getPosition()[1], this->cam->getPosition()[2]);
            }
        }
-       else if (isSliding) {
+       
+       if (isSliding) {
            if (slideCount < 20) {
                if (slideCount == 0) {
                    snowboardWO->rotateAboutRelY(DEGtoRAD * 90);
