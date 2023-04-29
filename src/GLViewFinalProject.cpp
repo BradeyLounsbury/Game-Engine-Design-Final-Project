@@ -95,12 +95,21 @@ void GLViewFinalProject::updateWorld()
    
    if (gameIsRunning) {
        Vector boardPos = snowboardWO->getPosition();
+
+       float dropValue = isJumping || isFalling ? 0 : -tan(DEGtoRAD * 15) * 5;
+       snowboardWO->moveRelative(Vector(5, 0, dropValue));
+       boardPos = snowboardWO->getPosition();
+
+       griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
+       this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
+       this->cam->setCameraLookAtPoint(boardPos);
+
        if (isMovingRight) {
            if (boardPos[1] <= -40) {
                isMovingRight = false;
            }
            else {
-               snowboardWO->moveRelative(Vector(5, -2, -tan(DEGtoRAD * 15) * 5));
+               snowboardWO->moveRelative(Vector(0, -2, 0));
                boardPos = snowboardWO->getPosition();
 
                griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
@@ -117,7 +126,7 @@ void GLViewFinalProject::updateWorld()
                isMovingLeft = false;
            }
            else {
-               snowboardWO->moveRelative(Vector(5, 2, -tan(DEGtoRAD * 15) * 5));
+               snowboardWO->moveRelative(Vector(0, 2, 0));
                boardPos = snowboardWO->getPosition();
 
                griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
@@ -130,14 +139,17 @@ void GLViewFinalProject::updateWorld()
            }
            
        }
-       else if (isJumping) {
+       
+       if (isJumping) {
+           std::cout << "isJumping\n" << boardPos[2] << " == " << jumpApex << std::endl;
            if (boardPos[2] >= jumpApex) {
+               std::cout << "reached apex\n";
                isJumping = false;
                isFalling = true;
            }
            else {
-
-               snowboardWO->moveRelative(Vector(5, 0, 1));
+               std::cout << "jumping\n";
+               snowboardWO->moveRelative(Vector(0, 0, 1));
                boardPos = snowboardWO->getPosition();
 
                griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
@@ -158,7 +170,7 @@ void GLViewFinalProject::updateWorld()
                isFalling = false;
            }
            else {
-               snowboardWO->moveRelative(Vector(5, 0, -4));
+               snowboardWO->moveRelative(Vector(0, 0, -4));
                boardPos = snowboardWO->getPosition();
 
                griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
@@ -177,9 +189,8 @@ void GLViewFinalProject::updateWorld()
                }
                slideCount++;
 
-               snowboardWO->moveRelative(Vector(5, 0, -tan(DEGtoRAD * 15) * 5));
                boardPos = snowboardWO->getPosition();
-               //snowboardWO->setPosition(boardPos[0], boardPos[1], boardPos[2] + 2);
+               snowboardWO->setPosition(boardPos[0], boardPos[1], boardPos[2]);
 
                griffWO->setPosition(boardPos.at(0) - 12, boardPos.at(1), boardPos.at(2) + 6);
                this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
@@ -197,7 +208,6 @@ void GLViewFinalProject::updateWorld()
                isSliding = false;
                slideCount = 0;
 
-               snowboardWO->moveRelative(Vector(5, 0, -tan(DEGtoRAD * 15) * 5));
                boardPos = snowboardWO->getPosition();
 
                griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
@@ -205,14 +215,7 @@ void GLViewFinalProject::updateWorld()
                this->cam->setCameraLookAtPoint(boardPos);
            }        
        }
-       else {
-           snowboardWO->moveRelative(Vector(5, 0, -tan(DEGtoRAD * 15) * 5));
-           boardPos = snowboardWO->getPosition();
 
-           griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
-           this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
-           this->cam->setCameraLookAtPoint(boardPos);
-       }
    }
    if (isNewRender()) {
        updateTerrain();
@@ -272,7 +275,7 @@ void GLViewFinalProject::onKeyDown( const SDL_KeyboardEvent& key )
 
    if (key.keysym.sym == SDLK_UP)
    {
-       if (!isFalling) {
+       if (!isFalling && !isJumping) {
            jumpApex = snowboardWO->getPosition()[2] + 15;
            isJumping = true;
        }
