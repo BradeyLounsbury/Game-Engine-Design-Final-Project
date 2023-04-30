@@ -43,6 +43,7 @@ protected:
 
    std::vector<int> terrainPlanes;
    std::map<int, std::vector<int>> terrainWOs;
+   std::map<int, std::vector<int>> ObstacleWOs;
    bool gameIsRunning = false;
    bool isMovingLeft = false;
    bool isMovingRight = false;

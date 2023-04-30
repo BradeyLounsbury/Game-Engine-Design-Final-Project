@@ -309,6 +309,7 @@ void Aftr::GLViewFinalProject::loadMap()
 
    std::string snowboard(ManagerEnvironmentConfiguration::getLMM() + "/models/snowboard/10535_Snowboard_v1_L3.obj");
    std::string griff(ManagerEnvironmentConfiguration::getLMM() + "/models/griff/griff.obj");
+   
 
    snowboardWO = WO::New(snowboard, Vector(0.1,0.1,0.1), MESH_SHADING_TYPE::mstFLAT);
    snowboardWO->setPosition(0, 0, 1);
@@ -321,13 +322,10 @@ void Aftr::GLViewFinalProject::loadMap()
 
    griffWO = WO::New(griff, Vector(0.07, 0.07, 0.07), MESH_SHADING_TYPE::mstFLAT);
    griffWO->setPosition(0, 0, 6.5);
-   //griffWO->rotateAboutGlobalZ(DEGtoRAD * -90);
    griffWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
    griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
   
    this->worldLst->push_back(griffWO);
-
-  
    
    //SkyBox Textures readily available
    std::vector< std::string > skyBoxImageNames; //vector to store texture paths
@@ -551,6 +549,11 @@ void GLViewFinalProject::updateTerrain() {
 
 void GLViewFinalProject::addChunksObjs(int ID) {
     std::string tree(ManagerEnvironmentConfiguration::getLMM() + "/models/terrain/lowpolytree.obj");
+    std::string rock(ManagerEnvironmentConfiguration::getLMM() + "/models/rock/rock.fbx");
+    std::string balloons(ManagerEnvironmentConfiguration::getLMM() + "/models/balloons/13498_Balloon_Arch_v1_l2.obj");
+    std::string dumpster(ManagerEnvironmentConfiguration::getSMM() + "/models/dumpster-big.wrl");
+    std::string fence(ManagerEnvironmentConfiguration::getSMM() + "/models/picketfence.wrl");
+
     WO* plane = worldLst->getWOByID(ID);
     Vector planePos = plane->getPosition();
     srand(time(0));
@@ -558,18 +561,69 @@ void GLViewFinalProject::addChunksObjs(int ID) {
     for (int i = 0; i < 50; i++) {
         int treeScale = (rand() % 3) + 6;
         WO* treeWO = WO::New(tree, Vector(treeScale, treeScale, treeScale), MESH_SHADING_TYPE::mstFLAT);
+        auto xpos_modifier = ((rand() % 401) - 200);
         if (i % 2 == 0) {
-            auto xpos_modifier = ((rand() % 401) - 200);
             treeWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) + ((rand() % 131) + 70), planePos.at(2) + 7 - xpos_modifier * 0.25); // left side trees
         }
         else {
-            auto xpos_modifier = ((rand() % 401) - 200);
             treeWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) + ((rand() % 131) - 200), planePos.at(2) + 7 - xpos_modifier * 0.25); // right side trees
         }
         treeWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
         terrainWOs[ID].push_back(treeWO->getID()); // trees to terrain list
         worldLst->push_back(treeWO);
     }
+
+
+    int xpos_modifier = -200;
+    int totalObstacles = 4;
+    for (int i = 0; i < totalObstacles; i++) {
+
+        int objType = (rand() % 10) + 1;
+        int laneNum = (rand() % 3) + 1;
+        int zShift = 0;
+        WO* obstacleWO;
+
+        if (objType <= 4) {
+            obstacleWO = WO::New(rock, Vector(10.0, 10.0, 10.0), MESH_SHADING_TYPE::mstFLAT);
+            obstacleWO->setLabel("rock");
+            zShift = -2;
+        }
+        else if (objType > 4 && objType <= 7) {
+            obstacleWO = WO::New(fence, Vector(25.0, 25.0, 25.0), MESH_SHADING_TYPE::mstFLAT);
+            obstacleWO->setLabel("fence");
+            zShift = -3;
+        }
+        else if (objType > 7 && objType <= 9) {
+            obstacleWO = WO::New(dumpster, Vector(15.0, 15.0, 15.0), MESH_SHADING_TYPE::mstFLAT);
+            obstacleWO->rotateAboutGlobalY(DEGtoRAD * 180);
+            obstacleWO->rotateAboutGlobalZ(DEGtoRAD * 90);
+            obstacleWO->setLabel("dumpster");
+            zShift = -1;
+        }
+        else {
+            obstacleWO = WO::New(balloons, Vector(0.2, 0.2, 0.2), MESH_SHADING_TYPE::mstFLAT);
+            obstacleWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+            obstacleWO->rotateAboutGlobalY(DEGtoRAD * 90);
+            obstacleWO->setLabel("balloons");
+            zShift = -2;
+        }
+
+        if (laneNum == 1) {
+            obstacleWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) + 40, (planePos.at(2) + 7 - xpos_modifier * 0.25) + zShift); // left lane
+        }
+        else if (laneNum == 2) {
+            obstacleWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) , (planePos.at(2) + 7 - xpos_modifier * 0.25) + zShift); // middle lane
+        }
+        else {
+            obstacleWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) - 40, (planePos.at(2) + 7 - xpos_modifier * 0.25) + zShift); // right lane
+        }
+
+        obstacleWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
+        ObstacleWOs[ID].push_back(obstacleWO->getID()); // obstacles to terrain list
+        this->worldLst->push_back(obstacleWO);
+        xpos_modifier = xpos_modifier + (400 / totalObstacles);
+    }
+
 }
 
 bool GLViewFinalProject::isNewRender() {
