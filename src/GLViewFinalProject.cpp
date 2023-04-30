@@ -94,6 +94,9 @@ void GLViewFinalProject::updateWorld()
                           //this call.
    
    if (gameIsRunning) {
+       score++;
+       std::cout << "SCORE: " << score << std::endl;
+
        Vector boardPos = snowboardWO->getPosition();
 
        float dropValue = isJumping || isFalling ? 0 : -tan(DEGtoRAD * 15) * 5;
@@ -259,7 +262,7 @@ void GLViewFinalProject::onKeyDown( const SDL_KeyboardEvent& key )
    if( key.keysym.sym == SDLK_0 )
       this->setNumPhysicsStepsPerRender( 1 );
 
-   if( key.keysym.sym == SDLK_1 )
+   if( key.keysym.sym == SDLK_1 || key.keysym.sym == SDLK_RETURN )
    {
        gameIsRunning = true;
        //this->cam->setCameraLookDirection(Vector(1.0, 0.0, 0.0));
@@ -479,8 +482,19 @@ void Aftr::GLViewFinalProject::loadMap()
    //Make a Dear Im Gui instance via the WOImGui in the engine... This calls
    //the default Dear ImGui demo that shows all the features... To create your own,
    //inherit from WOImGui and override WOImGui::drawImGui_for_this_frame(...) (among any others you need).
-   
+   WOImGui* gui = WOImGui::New(nullptr);
+   gui->setLabel("My Gui");
 
+   gui->subscribe_drawImGuiWidget(
+       [this, gui]() //this is a lambda, the capture clause is in [], the input argument list is in (), and the body is in {}
+       {
+           ImGui::Begin(" ");
+           std::string score_text = "SCORE " + std::to_string(score);
+           ImGui::Text(const_cast<char*>(score_text.c_str()));
+
+           ImGui::End();
+       });
+   this->worldLst->push_back(gui);
 
    initChunks();
 }

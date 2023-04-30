@@ -51,6 +51,7 @@ protected:
    bool isSliding = false;
    int slideCount = 0;
    float jumpApex = 0;
+   int score = 0;
    WO* snowboardWO;
    WO* griffWO;
 };
