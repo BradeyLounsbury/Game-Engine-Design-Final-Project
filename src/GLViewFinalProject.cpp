@@ -188,13 +188,29 @@ void GLViewFinalProject::updateWorld()
        }
        
        if (isSliding) {
-           if (slideCount < 20) {
-               if (slideCount < 10) {
+           if (slideCount < 30) {
+               if (slideCount < 5) {
                    snowboardWO->rotateAboutRelY(DEGtoRAD * -9);
-                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * -9);
+                   //snowboardWO->rotateAboutGlobalY(DEGtoRAD * -9);
                    griffWO->rotateAboutRelZ(DEGtoRAD * 9);
                    //griffWO->rotateAboutRelY(DEGtoRAD * 90);
-                   griffWO->rotateAboutGlobalY(DEGtoRAD * -9);
+                   //griffWO->rotateAboutGlobalY(DEGtoRAD * -9);
+               }
+               else if (slideCount < 10) {
+                   snowboardWO->rotateAboutRelY(DEGtoRAD * -9);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * -18);
+                   griffWO->rotateAboutRelZ(DEGtoRAD * 9);
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * -18);
+               }
+               else if (slideCount > 20 && slideCount < 25) {
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 9);
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 9);
+               }
+               else if (slideCount > 25) {
+                   snowboardWO->rotateAboutRelY(DEGtoRAD * 18);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 9);
+                   griffWO->rotateAboutRelZ(DEGtoRAD * -18);
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 9);
                }
                slideCount++;
 
@@ -207,8 +223,8 @@ void GLViewFinalProject::updateWorld()
                snowboardWO->setPosition(boardPos);
 
 
-               this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
-               this->cam->setCameraLookAtPoint(boardPos);
+               this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
+               this->cam->setCameraLookAtPoint(griffPos);
            }
            else {
                snowboardWO->rotateToIdentity();
