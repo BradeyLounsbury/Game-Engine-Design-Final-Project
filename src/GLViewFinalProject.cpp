@@ -103,7 +103,10 @@ void GLViewFinalProject::updateWorld()
        griffWO->moveRelative(Vector(5, 0, dropValue));
        griffPos = griffWO->getPosition();
 
-       snowboardWO->setPosition(griffPos.at(0), griffPos.at(1), griffPos.at(2) - 5.5);
+       auto griffNormal = griffWO->getNormalDirection();
+       auto boardPos = griffPos + (griffNormal * -5);
+       snowboardWO->setPosition(boardPos);
+
        this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
        this->cam->setCameraLookAtPoint(griffPos);
 
@@ -211,13 +214,23 @@ void GLViewFinalProject::updateWorld()
                std::cout << "reached apex\n";
                isJumping = false;
                isFalling = true;
+               jumpCount = 0;
            }
            else {
+               if (jumpCount < 5) {
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * -2.5);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * -2.5);
+                   jumpCount++;
+               }
+
                std::cout << "jumping\n";
                griffWO->moveRelative(Vector(0, 0, 1));
                griffPos = griffWO->getPosition();
 
-               snowboardWO->setPosition(griffPos.at(0), griffPos.at(1), griffPos.at(2) - 5.5);
+               auto griffNormal = griffWO->getNormalDirection();
+               auto boardPos = griffPos + (griffNormal * -5);
+               snowboardWO->setPosition(boardPos);
+
                this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
                //this->cam->setPosition(boardPos[0] - 40, this->cam->getPosition()[1], this->cam->getPosition()[2]);
            }
@@ -236,12 +249,22 @@ void GLViewFinalProject::updateWorld()
                std::cout << "Stopped falling\n";
                griffWO->setPosition(griffPos[0], griffPos[1], planePos[2] + heightDiffFromCenter + 7.5);
                isFalling = false;
+               fallCount = 0;
            }
            else {
+               if (fallCount < 5) {
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 2.5);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 2.5);
+                   fallCount++;
+               }
+
                griffWO->moveRelative(Vector(0, 0, -4));
                griffPos = griffWO->getPosition();
 
-               snowboardWO->setPosition(griffPos.at(0), griffPos.at(1), griffPos.at(2) - 5.5);
+               auto griffNormal = griffWO->getNormalDirection();
+               auto boardPos = griffPos + (griffNormal * -5);
+               snowboardWO->setPosition(boardPos);
+
                this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
                //this->cam->setPosition(boardPos[0] - 40, this->cam->getPosition()[1], this->cam->getPosition()[2]);
            }
@@ -365,7 +388,7 @@ void GLViewFinalProject::onKeyDown( const SDL_KeyboardEvent& key )
    if (key.keysym.sym == SDLK_UP)
    {
        if (!isFalling && !isJumping) {
-           jumpApex = snowboardWO->getPosition()[2] + 15;
+           jumpApex = snowboardWO->getPosition()[2] + 25;
            isJumping = true;
        }
    }
