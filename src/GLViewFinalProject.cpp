@@ -128,7 +128,6 @@ void GLViewFinalProject::updateWorld()
                    griffWO->rotateAboutGlobalX(DEGtoRAD * 2.5);
                    snowboardWO->rotateAboutGlobalX(DEGtoRAD * 2.5);
                    rightCount++;
-                   //griffPos = griffWO->getPosition();
                    
                }
 
@@ -139,7 +138,6 @@ void GLViewFinalProject::updateWorld()
                auto boardPos = griffPos + (griffNormal * -5);
                snowboardWO->setPosition(boardPos);
 
-               //snowboardWO->setPosition(griffPos.at(0), griffPos.at(1), griffPos.at(2) - 5.5);
                this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
                this->cam->setCameraLookAtPoint(griffPos);
 
@@ -160,17 +158,46 @@ void GLViewFinalProject::updateWorld()
        else if (isMovingLeft) {
            if (griffPos[1] >= 40) {
                isMovingLeft = false;
+
+               if (leftCount > 0) {
+                   leftCount = 0;
+
+                   snowboardWO->rotateToIdentity();
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+                   griffWO->rotateToIdentity();
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
+               }
            }
            else {
+               if (leftCount < 5) {
+                   griffWO->rotateAboutGlobalX(DEGtoRAD * -2.5);
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -2.5);
+                   leftCount++;
+               }
                griffWO->moveRelative(Vector(0, 2, 0));
                griffPos = griffWO->getPosition();
 
-               snowboardWO->setPosition(griffPos.at(0), griffPos.at(1), griffPos.at(2) - 5.5);
+               auto griffNormal = griffWO->getNormalDirection();
+               auto boardPos = griffPos + (griffNormal * -5);
+               snowboardWO->setPosition(boardPos);
+
                this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
                this->cam->setCameraLookAtPoint(griffPos);
 
                if (griffPos[1] == 0 || griffPos[1] == -40) {
                    isMovingLeft = false;
+                   leftCount = 0;
+
+                   snowboardWO->rotateToIdentity();
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+                   griffWO->rotateToIdentity();
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
                }
            }
            
