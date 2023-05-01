@@ -110,17 +110,50 @@ void GLViewFinalProject::updateWorld()
        if (isMovingRight) {
            if (griffPos[1] <= -40) {
                isMovingRight = false;
+
+               if (rightCount > 0) {
+                   rightCount = 0;
+
+                   snowboardWO->rotateToIdentity();
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+                   griffWO->rotateToIdentity();
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
+               }
            }
            else {
+               if (rightCount < 5) {
+                   griffWO->rotateAboutGlobalX(DEGtoRAD * 2.5);
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * 2.5);
+                   rightCount++;
+                   //griffPos = griffWO->getPosition();
+                   
+               }
+
                griffWO->moveRelative(Vector(0, -2, 0));
                griffPos = griffWO->getPosition();
 
-               snowboardWO->setPosition(griffPos.at(0), griffPos.at(1), griffPos.at(2) - 5.5);
+               auto griffNormal = griffWO->getNormalDirection();
+               auto boardPos = griffPos + (griffNormal * -5);
+               snowboardWO->setPosition(boardPos);
+
+               //snowboardWO->setPosition(griffPos.at(0), griffPos.at(1), griffPos.at(2) - 5.5);
                this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
                this->cam->setCameraLookAtPoint(griffPos);
 
                if (griffPos[1] == 40 || griffPos[1] == 0) {
                    isMovingRight = false;
+                   rightCount = 0;
+
+                   snowboardWO->rotateToIdentity();
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+                   griffWO->rotateToIdentity();
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
                }
            }
        }

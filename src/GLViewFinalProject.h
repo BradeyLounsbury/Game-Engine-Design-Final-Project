@@ -45,9 +45,13 @@ protected:
    std::map<int, std::vector<int>> terrainWOs;
    bool gameIsRunning = false;
    bool isMovingLeft = false;
+   int leftCount = 0;
    bool isMovingRight = false;
+   int rightCount = 0;
    bool isJumping = false;
+   int jumpCount = 0;
    bool isFalling = false;
+   int fallCount = 0;
    bool isSliding = false;
    int slideCount = 0;
    float jumpApex = 0;
