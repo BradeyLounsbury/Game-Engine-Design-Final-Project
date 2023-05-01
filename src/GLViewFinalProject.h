@@ -36,6 +36,8 @@ public:
    void updateTerrain();
    void addChunksObjs(int ID);
    bool isNewRender();
+   bool isColliding();
+   int  getCurrentPlane();
 
 protected:
    GLViewFinalProject( const std::vector< std::string >& args );
