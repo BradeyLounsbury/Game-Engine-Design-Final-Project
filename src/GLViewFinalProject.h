@@ -32,6 +32,7 @@ public:
    virtual void onMouseMove( const SDL_MouseMotionEvent& e );
    virtual void onKeyDown( const SDL_KeyboardEvent& key );
    virtual void onKeyUp( const SDL_KeyboardEvent& key );
+   virtual void onJoyButtonDown(const SDL_JoyButtonEvent& joy);
    void initChunks();
    void updateTerrain();
    void addChunksObjs(int ID);

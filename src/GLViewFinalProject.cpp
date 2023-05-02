@@ -297,6 +297,35 @@ void GLViewFinalProject::onKeyUp( const SDL_KeyboardEvent& key )
    GLView::onKeyUp( key );
 }
 
+void GLViewFinalProject::onJoyButtonDown(const SDL_JoyButtonEvent& joy) {
+
+    GLView::onJoyButtonDown(joy);
+
+    if (joy.button == 0) {
+        isMovingLeft = true;
+        isMovingRight = false;
+    }
+    if (joy.button == 1) {
+        isMovingRight = true;
+        isMovingLeft = false;
+    }
+    
+    if (joy.button == 2) {
+        if (!isFalling) {
+            jumpApex = snowboardWO->getPosition()[2] + 15;
+            isJumping = true;
+        }
+    }
+    if (joy.button == 3) 
+    {
+        if (!isSliding) {
+            isSliding = true;
+        }
+    }
+    
+
+}
+
 
 void Aftr::GLViewFinalProject::loadMap()
 {
