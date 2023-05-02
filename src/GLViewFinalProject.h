@@ -35,6 +35,7 @@ public:
    void initChunks();
    void updateTerrain();
    void addChunksObjs(int ID);
+   void initObstacles();
    bool isNewRender();
    bool isColliding();
    int  getCurrentPlane();
@@ -46,6 +47,14 @@ protected:
    std::vector<int> terrainPlanes;
    std::map<int, std::vector<int>> terrainWOs;
    std::map<int, std::vector<int>> ObstacleWOs;
+   std::vector<WO*> rockWOs;
+   int currentRockWO = 0;
+   std::vector<WO*> fenceWOs;
+   int currentFenceWO = 0;
+   std::vector<WO*> dumpsterWOs;
+   int currentDumpsterWO = 0;
+   std::vector<WO*> balloonWOs;
+   int currentBalloonWO = 0;
    bool gameIsRunning = false;
    bool isMovingLeft = false;
    int leftCount = 0;
