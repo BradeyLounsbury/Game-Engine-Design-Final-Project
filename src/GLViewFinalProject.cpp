@@ -94,101 +94,225 @@ void GLViewFinalProject::updateWorld()
                           //this call.
    
    if (gameIsRunning) {
-       Vector boardPos = snowboardWO->getPosition();
+       score++;
+       std::cout << "SCORE: " << score << std::endl;
+
+       Vector griffPos = griffWO->getPosition();
+
+       float dropValue = isJumping || isFalling ? 0 : -tan(DEGtoRAD * 15) * 5;
+       griffWO->moveRelative(Vector(5, 0, dropValue));
+       griffPos = griffWO->getPosition();
+
+       auto griffNormal = griffWO->getNormalDirection();
+       auto boardPos = griffPos + (griffNormal * -5);
+       snowboardWO->setPosition(boardPos);
+
+       this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
+       this->cam->setCameraLookAtPoint(griffPos);
+
        if (isMovingRight) {
-           if (boardPos[1] <= -40) {
+           if (griffPos[1] <= -40) {
                isMovingRight = false;
+
+               if (rightCount > 0) {
+                   rightCount = 0;
+
+                   snowboardWO->rotateToIdentity();
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+                   griffWO->rotateToIdentity();
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
+               }
            }
            else {
-               snowboardWO->moveRelative(Vector(5, -2, -tan(DEGtoRAD * 15) * 5));
-               boardPos = snowboardWO->getPosition();
+               if (rightCount < 5) {
+                   griffWO->rotateAboutGlobalX(DEGtoRAD * 2.5);
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * 2.5);
+                   rightCount++;
+                   
+               }
 
-               griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
-               this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
-               this->cam->setCameraLookAtPoint(boardPos);
+               griffWO->moveRelative(Vector(0, -2, 0));
+               griffPos = griffWO->getPosition();
 
-               if (boardPos[1] == 40 || boardPos[1] == 0) {
+               auto griffNormal = griffWO->getNormalDirection();
+               auto boardPos = griffPos + (griffNormal * -5);
+               snowboardWO->setPosition(boardPos);
+
+               this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
+               this->cam->setCameraLookAtPoint(griffPos);
+
+               if (griffPos[1] == 40 || griffPos[1] == 0) {
                    isMovingRight = false;
+                   rightCount = 0;
+
+                   snowboardWO->rotateToIdentity();
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+                   griffWO->rotateToIdentity();
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
                }
            }
        }
        else if (isMovingLeft) {
-           if (boardPos[1] >= 40) {
+           if (griffPos[1] >= 40) {
                isMovingLeft = false;
+
+               if (leftCount > 0) {
+                   leftCount = 0;
+
+                   snowboardWO->rotateToIdentity();
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+                   griffWO->rotateToIdentity();
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
+               }
            }
            else {
-               snowboardWO->moveRelative(Vector(5, 2, -tan(DEGtoRAD * 15) * 5));
-               boardPos = snowboardWO->getPosition();
+               if (leftCount < 5) {
+                   griffWO->rotateAboutGlobalX(DEGtoRAD * -2.5);
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -2.5);
+                   leftCount++;
+               }
+               griffWO->moveRelative(Vector(0, 2, 0));
+               griffPos = griffWO->getPosition();
 
-               griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
-               this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
-               this->cam->setCameraLookAtPoint(boardPos);
+               auto griffNormal = griffWO->getNormalDirection();
+               auto boardPos = griffPos + (griffNormal * -5);
+               snowboardWO->setPosition(boardPos);
 
-               if (boardPos[1] == 0 || boardPos[1] == -40) {
+               this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
+               this->cam->setCameraLookAtPoint(griffPos);
+
+               if (griffPos[1] == 0 || griffPos[1] == -40) {
                    isMovingLeft = false;
+                   leftCount = 0;
+
+                   snowboardWO->rotateToIdentity();
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+                   griffWO->rotateToIdentity();
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
                }
            }
            
        }
-       else if (isJumping) {
-           if (boardPos[2] >= jumpApex) {
+       
+       if (isJumping) {
+           std::cout << "isJumping\n" << griffPos[2] << " == " << jumpApex << std::endl;
+           if (isSliding) slideCount = 20;
+
+           if (griffPos[2] >= jumpApex) {
+               std::cout << "reached apex\n";
                isJumping = false;
                isFalling = true;
+               jumpCount = 0;
            }
            else {
+               if (jumpCount < 5) {
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * -2.5);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * -2.5);
+                   jumpCount++;
+               }
 
-               snowboardWO->moveRelative(Vector(5, 0, 1));
-               boardPos = snowboardWO->getPosition();
+               std::cout << "jumping\n";
+               griffWO->moveRelative(Vector(0, 0, 1));
+               griffPos = griffWO->getPosition();
 
-               griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
-               this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
+               auto griffNormal = griffWO->getNormalDirection();
+               auto boardPos = griffPos + (griffNormal * -5);
+               snowboardWO->setPosition(boardPos);
+
+               this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
                //this->cam->setPosition(boardPos[0] - 40, this->cam->getPosition()[1], this->cam->getPosition()[2]);
            }
        }
        else if (isFalling) {
            std::cout << "isFalling\n";
+
+           if (isSliding) slideCount = 20;
+
            WO* plane = worldLst->getWOByID(terrainPlanes[0]);
            Vector planePos = plane->getPosition();
-           float boardDistFromCenter = planePos[0] - boardPos[0];
-           float heightDiffFromCenter = tan(DEGtoRAD * 15) * boardDistFromCenter;
-           std::cout << "INFO\n" << planePos << std::endl << boardDistFromCenter << std::endl << heightDiffFromCenter << std::endl << boardPos[2] << std::endl;
-           if (boardPos[2] <= planePos[2] + heightDiffFromCenter + 2) {
+           float griffDistFromCenter = planePos[0] - griffPos[0];
+           float heightDiffFromCenter = tan(DEGtoRAD * 15) * griffDistFromCenter;
+           std::cout << "INFO\n" << planePos << std::endl << griffDistFromCenter << std::endl << heightDiffFromCenter << std::endl << griffPos[2] << std::endl;
+           if (griffPos[2] <= planePos[2] + heightDiffFromCenter + 7.5) {
                std::cout << "Stopped falling\n";
-               snowboardWO->setPosition(boardPos[0], boardPos[1], planePos[2] + heightDiffFromCenter + 2);
+               griffWO->setPosition(griffPos[0], griffPos[1], planePos[2] + heightDiffFromCenter + 7.5);
                isFalling = false;
+               fallCount = 0;
            }
            else {
-               snowboardWO->moveRelative(Vector(5, 0, -4));
-               boardPos = snowboardWO->getPosition();
+               if (fallCount < 5) {
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 2.5);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 2.5);
+                   fallCount++;
+               }
 
-               griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
-               this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
+               griffWO->moveRelative(Vector(0, 0, -4));
+               griffPos = griffWO->getPosition();
+
+               auto griffNormal = griffWO->getNormalDirection();
+               auto boardPos = griffPos + (griffNormal * -5);
+               snowboardWO->setPosition(boardPos);
+
+               this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
                //this->cam->setPosition(boardPos[0] - 40, this->cam->getPosition()[1], this->cam->getPosition()[2]);
            }
        }
-       else if (isSliding) {
-           if (slideCount < 20) {
-               if (slideCount == 0) {
-                   snowboardWO->rotateAboutRelY(DEGtoRAD * 90);
-                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * -90);
-                   griffWO->rotateAboutRelZ(DEGtoRAD * 90);
+       
+       if (isSliding) {
+           if (slideCount < 30) {
+               if (slideCount < 5) {
+                   snowboardWO->rotateAboutRelY(DEGtoRAD * -9);
+                   //snowboardWO->rotateAboutGlobalY(DEGtoRAD * -9);
+                   griffWO->rotateAboutRelZ(DEGtoRAD * 9);
                    //griffWO->rotateAboutRelY(DEGtoRAD * 90);
-                   griffWO->rotateAboutGlobalY(DEGtoRAD * -90);
+                   //griffWO->rotateAboutGlobalY(DEGtoRAD * -9);
+               }
+               else if (slideCount < 10) {
+                   snowboardWO->rotateAboutRelY(DEGtoRAD * -9);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * -18);
+                   griffWO->rotateAboutRelZ(DEGtoRAD * 9);
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * -18);
+               }
+               else if (slideCount > 20 && slideCount < 25) {
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 9);
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 9);
+               }
+               else if (slideCount > 25) {
+                   snowboardWO->rotateAboutRelY(DEGtoRAD * 18);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 9);
+                   griffWO->rotateAboutRelZ(DEGtoRAD * -18);
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 9);
                }
                slideCount++;
 
-               snowboardWO->moveRelative(Vector(5, 0, -tan(DEGtoRAD * 15) * 5));
-               boardPos = snowboardWO->getPosition();
-               //snowboardWO->setPosition(boardPos[0], boardPos[1], boardPos[2] + 2);
+               
 
-               griffWO->setPosition(boardPos.at(0) - 12, boardPos.at(1), boardPos.at(2) + 6);
-               this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
-               this->cam->setCameraLookAtPoint(boardPos);
+               //griffWO->setPosition(boardPos.at(0) - 12, boardPos.at(1), boardPos.at(2) + 6);
+               griffPos = griffWO->getPosition();
+               auto griffNormal = griffWO->getNormalDirection();
+               auto boardPos = griffPos + (griffNormal * -5);
+               snowboardWO->setPosition(boardPos);
+
+
+               this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
+               this->cam->setCameraLookAtPoint(griffPos);
            }
            else {
                snowboardWO->rotateToIdentity();
                snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
-               snowboardWO->rotateAboutGlobalZ(DEGtoRAD * 90);
+               snowboardWO->rotateAboutGlobalZ(DEGtoRAD * -90);
                snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
 
                griffWO->rotateToIdentity();
@@ -197,22 +321,13 @@ void GLViewFinalProject::updateWorld()
                isSliding = false;
                slideCount = 0;
 
-               snowboardWO->moveRelative(Vector(5, 0, -tan(DEGtoRAD * 15) * 5));
-               boardPos = snowboardWO->getPosition();
-
-               griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
-               this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
-               this->cam->setCameraLookAtPoint(boardPos);
+               griffPos = griffWO->getPosition();
+               snowboardWO->setPosition(griffPos[0], griffPos[1], griffPos[2] - 5.5);
+               this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
+               this->cam->setCameraLookAtPoint(griffPos);
            }        
        }
-       else {
-           snowboardWO->moveRelative(Vector(5, 0, -tan(DEGtoRAD * 15) * 5));
-           boardPos = snowboardWO->getPosition();
 
-           griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2) + 5.5);
-           this->cam->setPosition(boardPos[0] - 40, boardPos[1], boardPos[2] + 30);
-           this->cam->setCameraLookAtPoint(boardPos);
-       }
    }
    if (isNewRender()) {
        updateTerrain();
@@ -255,7 +370,7 @@ void GLViewFinalProject::onKeyDown( const SDL_KeyboardEvent& key )
    if( key.keysym.sym == SDLK_0 )
       this->setNumPhysicsStepsPerRender( 1 );
 
-   if( key.keysym.sym == SDLK_1 )
+   if( key.keysym.sym == SDLK_1 || key.keysym.sym == SDLK_RETURN )
    {
        gameIsRunning = true;
        //this->cam->setCameraLookDirection(Vector(1.0, 0.0, 0.0));
@@ -277,8 +392,8 @@ void GLViewFinalProject::onKeyDown( const SDL_KeyboardEvent& key )
 
    if (key.keysym.sym == SDLK_UP)
    {
-       if (!isFalling) {
-           jumpApex = snowboardWO->getPosition()[2] + 15;
+       if (!isFalling && !isJumping) {
+           jumpApex = snowboardWO->getPosition()[2] + 25;
            isJumping = true;
        }
    }
@@ -473,8 +588,19 @@ void Aftr::GLViewFinalProject::loadMap()
    //Make a Dear Im Gui instance via the WOImGui in the engine... This calls
    //the default Dear ImGui demo that shows all the features... To create your own,
    //inherit from WOImGui and override WOImGui::drawImGui_for_this_frame(...) (among any others you need).
-   
+   WOImGui* gui = WOImGui::New(nullptr);
+   gui->setLabel("My Gui");
 
+   gui->subscribe_drawImGuiWidget(
+       [this, gui]() //this is a lambda, the capture clause is in [], the input argument list is in (), and the body is in {}
+       {
+           ImGui::Begin(" ");
+           std::string score_text = "SCORE " + std::to_string(score);
+           ImGui::Text(const_cast<char*>(score_text.c_str()));
+
+           ImGui::End();
+       });
+   this->worldLst->push_back(gui);
 
    initChunks();
 }
