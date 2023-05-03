@@ -95,7 +95,6 @@ void GLViewFinalProject::updateWorld()
    
    if (gameIsRunning) {
        score++;
-       std::cout << "SCORE: " << score << std::endl;
 
        Vector griffPos = griffWO->getPosition();
 
@@ -207,11 +206,9 @@ void GLViewFinalProject::updateWorld()
        }
        
        if (isJumping) {
-           std::cout << "isJumping\n" << griffPos[2] << " == " << jumpApex << std::endl;
            if (isSliding) slideCount = 20;
 
            if (griffPos[2] >= jumpApex) {
-               std::cout << "reached apex\n";
                isJumping = false;
                isFalling = true;
                jumpCount = 0;
@@ -223,7 +220,6 @@ void GLViewFinalProject::updateWorld()
                    jumpCount++;
                }
 
-               std::cout << "jumping\n";
                griffWO->moveRelative(Vector(0, 0, 1));
                griffPos = griffWO->getPosition();
 
@@ -236,7 +232,6 @@ void GLViewFinalProject::updateWorld()
            }
        }
        else if (isFalling) {
-           std::cout << "isFalling\n";
 
            if (isSliding) slideCount = 20;
 
@@ -244,9 +239,7 @@ void GLViewFinalProject::updateWorld()
            Vector planePos = plane->getPosition();
            float griffDistFromCenter = planePos[0] - griffPos[0];
            float heightDiffFromCenter = tan(DEGtoRAD * 15) * griffDistFromCenter;
-           std::cout << "INFO\n" << planePos << std::endl << griffDistFromCenter << std::endl << heightDiffFromCenter << std::endl << griffPos[2] << std::endl;
            if (griffPos[2] <= planePos[2] + heightDiffFromCenter + 7.5) {
-               std::cout << "Stopped falling\n";
                griffWO->setPosition(griffPos[0], griffPos[1], planePos[2] + heightDiffFromCenter + 7.5);
                isFalling = false;
                fallCount = 0;
@@ -673,6 +666,7 @@ void GLViewFinalProject::updateTerrain() {
     int xpos_modifier = -100;
     //int totalObstacles = 3;
 
+    ObstacleWOs[terrainPlanes.back()].clear();
     for (int i = 0; i < 3; i++) {
         int obj = rand() % 4;
         int laneNum = rand() % 3;
@@ -680,6 +674,7 @@ void GLViewFinalProject::updateTerrain() {
 
         if (obj == 0) { //rock
             WO* rock = rockWOs[currentRockWO];
+            ObstacleWOs[terrainPlanes.back()].push_back(rock->getID());
             
             if (laneNum == 0) {
                 rock->setPosition(planePos[0] + xpos_modifier, planePos[1] + 40, (planePos.at(2) + 7 - xpos_modifier * 0.25) - 2);
@@ -700,6 +695,7 @@ void GLViewFinalProject::updateTerrain() {
         }
         else if (obj == 1) { //fence
             WO* fence = fenceWOs[currentFenceWO];
+            ObstacleWOs[terrainPlanes.back()].push_back(fence->getID());
 
             if (laneNum == 0) {
                 fence->setPosition(planePos[0] + xpos_modifier, planePos[1] + 40, (planePos.at(2) + 7 - xpos_modifier * 0.25) - 3);
@@ -720,6 +716,7 @@ void GLViewFinalProject::updateTerrain() {
         }
         else if (obj == 2) { //dumpster
             WO* dumpster = dumpsterWOs[currentDumpsterWO];
+            ObstacleWOs[terrainPlanes.back()].push_back(dumpster->getID());
 
             if (laneNum == 0) {
                 dumpster->setPosition(planePos[0] + xpos_modifier, planePos[1] + 40, (planePos.at(2) + 7 - xpos_modifier * 0.25) - 1);
@@ -740,6 +737,7 @@ void GLViewFinalProject::updateTerrain() {
         }
         else {  //balloon
             WO* balloon = balloonWOs[currentBalloonWO];
+            ObstacleWOs[terrainPlanes.back()].push_back(balloon->getID());
 
             if (laneNum == 0) {
                 balloon->setPosition(planePos[0] + xpos_modifier, planePos[1] + 40, (planePos.at(2) + 7 - xpos_modifier * 0.25) - 2);
@@ -940,78 +938,32 @@ bool GLViewFinalProject::isColliding() {
 
     auto grifPos = griffWO->getPosition();
 
-    //for (int i = 0; i < ObstacleWOs[currentPlane].size(); i++) { // check all obstacles in current plane
-    //    WO* obstacleWO = worldLst->getWOByID(ObstacleWOs[currentPlane].at(i));
-    //    auto obsPos = obstacleWO->getPosition();
-
-    //    if (obstacleWO->getLabel() == "rock") {
-    //        if ( (grifPos[0] > obsPos[0] - 15 && grifPos[0] < obsPos[0] + 15) &&    // grif is within bounding xBox
-    //             (grifPos[1] > obsPos[1] - 15 && grifPos[1] < obsPos[1] + 15) &&    // grif is within bounding yBox
-    //             (grifPos[2] > obsPos[2] - 15 && grifPos[2] < obsPos[2] + 15))      // grif is within bounding zBox
-    //             {
-    //            if (gameIsRunning) std::cout << "COLLISION - ROCK\n";
-    //            return true;
-    //        }
-    //    }
-    //    else if (obstacleWO->getLabel() == "fence") {
-    //        if ((grifPos[0] > obsPos[0] - 5 && grifPos[0] < obsPos[0] + 5) &&   
-    //            (grifPos[1] > obsPos[1] - 20 && grifPos[1] < obsPos[1] + 20) &&   
-    //            (grifPos[2] > obsPos[2] - 18 && grifPos[2] < obsPos[2] + 18))
-    //        {
-    //            if (gameIsRunning) std::cout << "COLLISION - FENCE\n";
-    //            return true;
-    //        }
-    //    }
-    //    else if (obstacleWO->getLabel() == "dumpster") {
-    //        if ((grifPos[0] > obsPos[0] - 30 && grifPos[0] < obsPos[0] + 30) &&
-    //            (grifPos[1] > obsPos[1] - 15 && grifPos[1] < obsPos[1] + 15) &&
-    //            (grifPos[2] > obsPos[2] - 20 && grifPos[2] < obsPos[2] + 20))
-    //        {
-    //            if (gameIsRunning) std::cout << "COLLISION - DUMPSTER\n";
-    //            return true;
-    //        }
-    //    }
-    //    else if (obstacleWO->getLabel() == "balloons") {
-    //        if ((grifPos[0] > obsPos[0] - 5 && grifPos[0] < obsPos[0] + 5) &&
-    //            (grifPos[1] > obsPos[1] - 30 && grifPos[1] < obsPos[1] + 30) &&
-    //            (grifPos[2] > obsPos[2] + 2 && grifPos[2] < obsPos[2] + 5))
-    //        {
-    //            if (gameIsRunning) std::cout << "COLLISION - BALOONS\n";
-    //            return true;
-    //        }
-    //    }
-    //}
-
-    for (int i = 0; i < 15; i++) {
-        WO* obstacleWO = rockWOs[i];
+    std::cout << ObstacleWOs[currentPlane].size() << std::endl;
+    for (int i = 0; i < ObstacleWOs[currentPlane].size(); i++) { // check all obstacles in current plane
+        WO* obstacleWO = worldLst->getWOByID(ObstacleWOs[currentPlane].at(i));
+        std::cout << "obstacleWO: " << obstacleWO->getLabel() << "\nposition: " << obstacleWO->getPosition() << std::endl;
+        std::cout << "griffPos: " << grifPos << std::endl;
         auto obsPos = obstacleWO->getPosition();
-        
-            if ((grifPos[0] > obsPos[0] - 15 && grifPos[0] < obsPos[0] + 15) &&    // grif is within bounding xBox
-                (grifPos[1] > obsPos[1] - 15 && grifPos[1] < obsPos[1] + 15) &&    // grif is within bounding yBox
-                (grifPos[2] > obsPos[2] - 15 && grifPos[2] < obsPos[2] + 15))      // grif is within bounding zBox
-            {
+
+        if (obstacleWO->getLabel() == "rock") {
+            if ( (grifPos[0] > obsPos[0] - 15 && grifPos[0] < obsPos[0] + 15) &&    // grif is within bounding xBox
+                 (grifPos[1] > obsPos[1] - 15 && grifPos[1] < obsPos[1] + 15) &&    // grif is within bounding yBox
+                 (grifPos[2] > obsPos[2] - 15 && grifPos[2] < obsPos[2] + 15))      // grif is within bounding zBox
+                 {
                 if (gameIsRunning) std::cout << "COLLISION - ROCK\n";
                 return true;
             }
-    }
-
-    for (int i = 0; i < 15; i++) {
-        WO* obstacleWO = fenceWOs[i];
-        auto obsPos = obstacleWO->getPosition();
-
-            if ((grifPos[0] > obsPos[0] - 5 && grifPos[0] < obsPos[0] + 5) &&
-                (grifPos[1] > obsPos[1] - 20 && grifPos[1] < obsPos[1] + 20) &&
+        }
+        else if (obstacleWO->getLabel() == "fence") {
+            if ((grifPos[0] > obsPos[0] - 5 && grifPos[0] < obsPos[0] + 5) &&   
+                (grifPos[1] > obsPos[1] - 20 && grifPos[1] < obsPos[1] + 20) &&   
                 (grifPos[2] > obsPos[2] - 18 && grifPos[2] < obsPos[2] + 18))
             {
                 if (gameIsRunning) std::cout << "COLLISION - FENCE\n";
                 return true;
             }
-    }
-
-    for (int i = 0; i < 15; i++) {
-        WO* obstacleWO = dumpsterWOs[i];
-        auto obsPos = obstacleWO->getPosition();
-
+        }
+        else if (obstacleWO->getLabel() == "dumpster") {
             if ((grifPos[0] > obsPos[0] - 30 && grifPos[0] < obsPos[0] + 30) &&
                 (grifPos[1] > obsPos[1] - 15 && grifPos[1] < obsPos[1] + 15) &&
                 (grifPos[2] > obsPos[2] - 20 && grifPos[2] < obsPos[2] + 20))
@@ -1019,12 +971,8 @@ bool GLViewFinalProject::isColliding() {
                 if (gameIsRunning) std::cout << "COLLISION - DUMPSTER\n";
                 return true;
             }
-    }
-
-    for (int i = 0; i < 15; i++) {
-        WO* obstacleWO = balloonWOs[i];
-        auto obsPos = obstacleWO->getPosition();
-
+        }
+        else if (obstacleWO->getLabel() == "balloons") {
             if ((grifPos[0] > obsPos[0] - 5 && grifPos[0] < obsPos[0] + 5) &&
                 (grifPos[1] > obsPos[1] - 30 && grifPos[1] < obsPos[1] + 30) &&
                 (grifPos[2] > obsPos[2] + 2 && grifPos[2] < obsPos[2] + 5))
@@ -1032,14 +980,67 @@ bool GLViewFinalProject::isColliding() {
                 if (gameIsRunning) std::cout << "COLLISION - BALOONS\n";
                 return true;
             }
+        }
     }
+
+    //for (int i = 0; i < rockWOs[currentPlane].size(); i++) {
+    //    WO* obstacleWO = this->worldLst->getWOByID(rockWOs[currentPlane][i]);
+    //    auto obsPos = obstacleWO->getPosition();
+    //    
+    //        if ((grifPos[0] > obsPos[0] - 15 && grifPos[0] < obsPos[0] + 15) &&    // grif is within bounding xBox
+    //            (grifPos[1] > obsPos[1] - 15 && grifPos[1] < obsPos[1] + 15) &&    // grif is within bounding yBox
+    //            (grifPos[2] > obsPos[2] - 15 && grifPos[2] < obsPos[2] + 15))      // grif is within bounding zBox
+    //        {
+    //            if (gameIsRunning) std::cout << "COLLISION - ROCK\n";
+    //            return true;
+    //        }
+    //}
+
+    //for (int i = 0; i < fenceWOs[currentPlane].size(); i++) {
+    //    WO* obstacleWO = this->worldLst->getWOByID(fenceWOs[currentPlane][i]);
+    //    auto obsPos = obstacleWO->getPosition();
+
+    //        if ((grifPos[0] > obsPos[0] - 5 && grifPos[0] < obsPos[0] + 5) &&
+    //            (grifPos[1] > obsPos[1] - 20 && grifPos[1] < obsPos[1] + 20) &&
+    //            (grifPos[2] > obsPos[2] - 18 && grifPos[2] < obsPos[2] + 18))
+    //        {
+    //            if (gameIsRunning) std::cout << "COLLISION - FENCE\n";
+    //            return true;
+    //        }
+    //}
+
+    //for (int i = 0; i < dumpsterWOs[currentPlane].size(); i++) {
+    //    WO* obstacleWO = this->worldLst->getWOByID(dumpsterWOs[currentPlane][i]);
+    //    auto obsPos = obstacleWO->getPosition();
+
+    //        if ((grifPos[0] > obsPos[0] - 30 && grifPos[0] < obsPos[0] + 30) &&
+    //            (grifPos[1] > obsPos[1] - 15 && grifPos[1] < obsPos[1] + 15) &&
+    //            (grifPos[2] > obsPos[2] - 20 && grifPos[2] < obsPos[2] + 20))
+    //        {
+    //            if (gameIsRunning) std::cout << "COLLISION - DUMPSTER\n";
+    //            return true;
+    //        }
+    //}
+
+    //for (int i = 0; i < balloonWOs[currentPlane].size(); i++) {
+    //    WO* obstacleWO = this->worldLst->getWOByID(balloonWOs[currentPlane][i]);
+    //    auto obsPos = obstacleWO->getPosition();
+
+    //        if ((grifPos[0] > obsPos[0] - 5 && grifPos[0] < obsPos[0] + 5) &&
+    //            (grifPos[1] > obsPos[1] - 30 && grifPos[1] < obsPos[1] + 30) &&
+    //            (grifPos[2] > obsPos[2] + 2 && grifPos[2] < obsPos[2] + 5))
+    //        {
+    //            if (gameIsRunning) std::cout << "COLLISION - BALOONS\n";
+    //            return true;
+    //        }
+    //}
     
     return false;
 }
 
 int GLViewFinalProject::getCurrentPlane() {
 
-    int grifXPos = griffWO->getPosition().at(0);
+    int grifXPos = griffWO->getPosition().at(0) - 200;
     for (int i = 0; i < terrainPlanes.size(); i++) {
         float terrainXPos = worldLst->getWOByID(terrainPlanes[i])->getPosition().at(0);
         if (grifXPos > terrainXPos - 200 && grifXPos < terrainXPos + 200) return terrainPlanes[i];
