@@ -332,6 +332,11 @@ void GLViewFinalProject::updateWorld()
    if (isNewRender()) {
        updateTerrain();
    }
+
+   if (isColliding()) {
+       gameIsRunning = false;
+   }
+
 }
 
 
@@ -405,6 +410,35 @@ void GLViewFinalProject::onKeyDown( const SDL_KeyboardEvent& key )
 void GLViewFinalProject::onKeyUp( const SDL_KeyboardEvent& key )
 {
    GLView::onKeyUp( key );
+}
+
+void GLViewFinalProject::onJoyButtonDown(const SDL_JoyButtonEvent& joy) {
+
+    GLView::onJoyButtonDown(joy);
+
+    if (joy.button == 0) {
+        isMovingLeft = true;
+        isMovingRight = false;
+    }
+    if (joy.button == 1) {
+        isMovingRight = true;
+        isMovingLeft = false;
+    }
+
+    if (joy.button == 2) {
+        if (!isFalling) {
+            jumpApex = snowboardWO->getPosition()[2] + 15;
+            isJumping = true;
+        }
+    }
+    if (joy.button == 3)
+    {
+        if (!isSliding) {
+            isSliding = true;
+        }
+    }
+
+
 }
 
 
@@ -667,6 +701,32 @@ void GLViewFinalProject::updateTerrain() {
         }
     }
 
+    int xpos_modifier = -100;
+    int totalObstacles = 3;
+
+    for (int i = 0; i < ObstacleWOs[terrainPlanes.at(0)].size(); i++) { // shift furthest back obstacles to forward most plane
+        WO* obstacleWO = worldLst->getWOByID(ObstacleWOs[terrainPlanes.at(0)].at(i));
+        int laneNum = (rand() % 3) + 1;
+        int zShift = 0;
+
+        if (obstacleWO->getLabel() == "rock") zShift = -2;
+        else if (obstacleWO->getLabel() == "fence") zShift = -3;
+        else if (obstacleWO->getLabel() == "dumpster") zShift = -1;
+        else if (obstacleWO->getLabel() == "balloons") zShift = -2;
+
+        if (laneNum == 1) {
+            obstacleWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) + 40, (planePos.at(2) + 7 - xpos_modifier * 0.25) + zShift); // left lane
+        }
+        else if (laneNum == 2) {
+            obstacleWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1), (planePos.at(2) + 7 - xpos_modifier * 0.25) + zShift); // middle lane
+        }
+        else {
+            obstacleWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) - 40, (planePos.at(2) + 7 - xpos_modifier * 0.25) + zShift); // right lane
+        }
+        xpos_modifier = xpos_modifier + (400 / totalObstacles);
+    }
+
+
     int oldestPlaneID = terrainPlanes.at(0);
 
     for (int i = 0; i < terrainPlanes.size() - 1; i++) { // update terrain plain ID vector to match new positionings
@@ -677,28 +737,150 @@ void GLViewFinalProject::updateTerrain() {
 
 void GLViewFinalProject::addChunksObjs(int ID) {
     std::string tree(ManagerEnvironmentConfiguration::getLMM() + "/models/terrain/lowpolytree.obj");
+    std::string rock(ManagerEnvironmentConfiguration::getLMM() + "/models/rock/rock.fbx");
+    std::string balloons(ManagerEnvironmentConfiguration::getLMM() + "/models/balloons/13498_Balloon_Arch_v1_l2.obj");
+    std::string dumpster(ManagerEnvironmentConfiguration::getSMM() + "/models/dumpster-big.wrl");
+    std::string fence(ManagerEnvironmentConfiguration::getSMM() + "/models/picketfence.wrl");
+
     WO* plane = worldLst->getWOByID(ID);
     Vector planePos = plane->getPosition();
     srand(time(0));
 
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 50; i++) { // trees
         int treeScale = (rand() % 3) + 6;
         WO* treeWO = WO::New(tree, Vector(treeScale, treeScale, treeScale), MESH_SHADING_TYPE::mstFLAT);
+        auto xpos_modifier = ((rand() % 401) - 200);
         if (i % 2 == 0) {
-            auto xpos_modifier = ((rand() % 401) - 200);
             treeWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) + ((rand() % 131) + 70), planePos.at(2) + 7 - xpos_modifier * 0.25); // left side trees
         }
         else {
-            auto xpos_modifier = ((rand() % 401) - 200);
             treeWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) + ((rand() % 131) - 200), planePos.at(2) + 7 - xpos_modifier * 0.25); // right side trees
         }
         treeWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
         terrainWOs[ID].push_back(treeWO->getID()); // trees to terrain list
         worldLst->push_back(treeWO);
     }
+
+
+
+    int xpos_modifier = -100;
+    int totalObstacles = 3;
+    for (int i = 0; i < totalObstacles; i++) { // obstacles
+
+        int objType = (rand() % 10) + 1;
+        int laneNum = (rand() % 3) + 1;
+        int zShift = 0;
+        WO* obstacleWO;
+
+        if (objType <= 4) {
+            obstacleWO = WO::New(rock, Vector(10.0, 10.0, 10.0), MESH_SHADING_TYPE::mstFLAT);
+            obstacleWO->setLabel("rock");
+            zShift = -2;
+        }
+        else if (objType > 4 && objType <= 7) {
+            obstacleWO = WO::New(fence, Vector(25.0, 25.0, 25.0), MESH_SHADING_TYPE::mstFLAT);
+            obstacleWO->setLabel("fence");
+            zShift = -3;
+        }
+        else if (objType > 7 && objType <= 9) {
+            obstacleWO = WO::New(dumpster, Vector(15.0, 15.0, 15.0), MESH_SHADING_TYPE::mstFLAT);
+            obstacleWO->rotateAboutGlobalY(DEGtoRAD * 180);
+            obstacleWO->rotateAboutGlobalZ(DEGtoRAD * 90);
+            obstacleWO->setLabel("dumpster");
+            zShift = -1;
+        }
+        else {
+            obstacleWO = WO::New(balloons, Vector(0.2, 0.2, 0.2), MESH_SHADING_TYPE::mstFLAT);
+            obstacleWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+            obstacleWO->rotateAboutGlobalY(DEGtoRAD * 90);
+            obstacleWO->setLabel("balloons");
+            zShift = -2;
+        }
+
+        if (laneNum == 2 && terrainPlanes.size() < 2) laneNum = 1;
+
+        if (laneNum == 1) {
+            obstacleWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) + 40, (planePos.at(2) + 7 - xpos_modifier * 0.25) + zShift); // left lane
+        }
+        else if (laneNum == 2) {
+            obstacleWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1), (planePos.at(2) + 7 - xpos_modifier * 0.25) + zShift); // middle lane
+        }
+        else {
+            obstacleWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) - 40, (planePos.at(2) + 7 - xpos_modifier * 0.25) + zShift); // right lane
+        }
+
+        obstacleWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
+        ObstacleWOs[ID].push_back(obstacleWO->getID()); // obstacles to terrain list
+        this->worldLst->push_back(obstacleWO);
+        xpos_modifier = xpos_modifier + (400 / totalObstacles);
+    }
+
 }
 
 bool GLViewFinalProject::isNewRender() {
     WO* oldChunk = worldLst->getWOByID(terrainPlanes.at(1));
     return this->cam->getPosition().at(0) > oldChunk->getPosition().at(0);
+}
+
+bool GLViewFinalProject::isColliding() {
+
+    int currentPlane = getCurrentPlane();
+    if (currentPlane == -1) return true; // unable to locate current plane therefore end game
+
+    auto grifPos = griffWO->getPosition();
+
+    for (int i = 0; i < ObstacleWOs[currentPlane].size(); i++) { // check all obstacles in current plane
+        WO* obstacleWO = worldLst->getWOByID(ObstacleWOs[currentPlane].at(i));
+        auto obsPos = obstacleWO->getPosition();
+
+        if (obstacleWO->getLabel() == "rock") {
+            if ((grifPos[0] > obsPos[0] - 15 && grifPos[0] < obsPos[0] + 15) &&    // grif is within bounding xBox
+                (grifPos[1] > obsPos[1] - 15 && grifPos[1] < obsPos[1] + 15) &&    // grif is within bounding yBox
+                (grifPos[2] > obsPos[2] - 15 && grifPos[2] < obsPos[2] + 15))      // grif is within bounding zBox
+            {
+                if (gameIsRunning) std::cout << "COLLISION - ROCK\n";
+                return true;
+            }
+        }
+        else if (obstacleWO->getLabel() == "fence") {
+            if ((grifPos[0] > obsPos[0] - 5 && grifPos[0] < obsPos[0] + 5) &&
+                (grifPos[1] > obsPos[1] - 20 && grifPos[1] < obsPos[1] + 20) &&
+                (grifPos[2] > obsPos[2] - 18 && grifPos[2] < obsPos[2] + 18))
+            {
+                if (gameIsRunning) std::cout << "COLLISION - FENCE\n";
+                return true;
+            }
+        }
+        else if (obstacleWO->getLabel() == "dumpster") {
+            if ((grifPos[0] > obsPos[0] - 30 && grifPos[0] < obsPos[0] + 30) &&
+                (grifPos[1] > obsPos[1] - 15 && grifPos[1] < obsPos[1] + 15) &&
+                (grifPos[2] > obsPos[2] - 20 && grifPos[2] < obsPos[2] + 20))
+            {
+                if (gameIsRunning) std::cout << "COLLISION - DUMPSTER\n";
+                return true;
+            }
+        }
+        else if (obstacleWO->getLabel() == "balloons") {
+            if ((grifPos[0] > obsPos[0] - 5 && grifPos[0] < obsPos[0] + 5) &&
+                (grifPos[1] > obsPos[1] - 30 && grifPos[1] < obsPos[1] + 30) &&
+                (grifPos[2] > obsPos[2] + 2 && grifPos[2] < obsPos[2] + 5))
+            {
+                if (gameIsRunning) std::cout << "COLLISION - BALOONS\n";
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+int GLViewFinalProject::getCurrentPlane() {
+
+    int grifXPos = griffWO->getPosition().at(0);
+    for (int i = 0; i < terrainPlanes.size(); i++) {
+        float terrainXPos = worldLst->getWOByID(terrainPlanes[i])->getPosition().at(0);
+        if (grifXPos > terrainXPos - 200 && grifXPos < terrainXPos + 200) return terrainPlanes[i];
+    }
+
+    return -1;
 }

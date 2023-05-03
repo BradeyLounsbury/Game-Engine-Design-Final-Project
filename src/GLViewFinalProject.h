@@ -32,10 +32,13 @@ public:
    virtual void onMouseMove( const SDL_MouseMotionEvent& e );
    virtual void onKeyDown( const SDL_KeyboardEvent& key );
    virtual void onKeyUp( const SDL_KeyboardEvent& key );
+   virtual void onJoyButtonDown(const SDL_JoyButtonEvent& joy);
    void initChunks();
    void updateTerrain();
    void addChunksObjs(int ID);
    bool isNewRender();
+   bool isColliding();
+   int  getCurrentPlane();
 
 protected:
    GLViewFinalProject( const std::vector< std::string >& args );
@@ -43,6 +46,7 @@ protected:
 
    std::vector<int> terrainPlanes;
    std::map<int, std::vector<int>> terrainWOs;
+   std::map<int, std::vector<int>> ObstacleWOs;
    bool gameIsRunning = false;
    bool isMovingLeft = false;
    int leftCount = 0;
