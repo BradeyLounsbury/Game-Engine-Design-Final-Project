@@ -208,6 +208,7 @@ void GLViewFinalProject::updateWorld()
        
        if (isJumping) {
            std::cout << "isJumping\n" << griffPos[2] << " == " << jumpApex << std::endl;
+           soundDevice->stopAllSoundsOfSoundSource(glideSoundSrc);
            if (isSliding) slideCount = 20;
 
            if (griffPos[2] >= jumpApex) {
@@ -250,6 +251,8 @@ void GLViewFinalProject::updateWorld()
                griffWO->setPosition(griffPos[0], griffPos[1], planePos[2] + heightDiffFromCenter + 7.5);
                isFalling = false;
                fallCount = 0;
+               std::string glideSound(ManagerEnvironmentConfiguration::getLMM() + "/sounds/glide.wav");
+               soundDevice->play2D(glideSound.c_str(), true);
            }
            else {
                if (fallCount < 5) {
@@ -333,8 +336,11 @@ void GLViewFinalProject::updateWorld()
        updateTerrain();
    }
 
-   if (isColliding()) {
+   if (isColliding() && gameIsRunning) {
        gameIsRunning = false;
+       std::string crash(ManagerEnvironmentConfiguration::getLMM() + "/sounds/VineBoom.wav");
+       soundDevice->play2D(crash.c_str(), false);
+       soundDevice->stopAllSoundsOfSoundSource(glideSoundSrc);
    }
 
 }
@@ -372,10 +378,24 @@ void GLViewFinalProject::onKeyDown( const SDL_KeyboardEvent& key )
 
    if( key.keysym.sym == SDLK_1 || key.keysym.sym == SDLK_RETURN )
    {
+       std::string glideSound(ManagerEnvironmentConfiguration::getLMM() + "/sounds/glide.wav");
+       std::vector<std::string> songList;
+       int songIdx = 0;
+
+       songList.push_back(ManagerEnvironmentConfiguration::getLMM() + "/sounds/ChiliSnow.wav");
+       songList.push_back(ManagerEnvironmentConfiguration::getLMM() + "/sounds/CherubRock.wav");
+       songList.push_back(ManagerEnvironmentConfiguration::getLMM() + "/sounds/BugginOut.wav");
+       songList.push_back(ManagerEnvironmentConfiguration::getLMM() + "/sounds/Barracuda.wav");
+
+       songIdx = ((rand() % songList.size()) + 1)-1;
+
        gameIsRunning = true;
        //this->cam->setCameraLookDirection(Vector(1.0, 0.0, 0.0));
        this->cam->setPosition(-20, 3, 8);
        //this->cam->setCameraLookDirection(Vector(0, 0, 0));
+       soundDevice->play2D(glideSound.c_str(), true);
+       glideSoundSrc = soundDevice->getSoundSource(glideSound.c_str());
+       soundDevice->play2D(songList[songIdx].c_str(), false);
    }
 
    if (key.keysym.sym == SDLK_RIGHT)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GLView.h"
+#include "irrKlang.h"
 
 namespace Aftr
 {
@@ -62,6 +63,9 @@ protected:
    int score = 0;
    WO* snowboardWO;
    WO* griffWO;
+
+   irrklang::ISoundEngine* soundDevice = irrklang::createIrrKlangDevice();
+   irrklang::ISoundSource* glideSoundSrc;
 };
 
 /** \} */
