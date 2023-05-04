@@ -92,25 +92,257 @@ void GLViewFinalProject::updateWorld()
    GLView::updateWorld(); //Just call the parent's update world first.
                           //If you want to add additional functionality, do it after
                           //this call.
+   
    if (gameIsRunning) {
-       //Vector camPos = this->cam->getPosition();
-       //Vector camLook = this->cam->getLookDirection();
-       ////std::cout << "Cam Pos: " << camPos.at(0) << "," << camPos.at(1) << "," << camPos.at(2) << "\n";
-       ////std::cout << "Cam Look: " << camLook.at(0) << "," << camLook.at(1) << "," << camLook.at(2) << "\n";
-       //this->cam->setPosition(camPos.at(0) + 1.5, camPos.at(1), 10);
+       score++;
+       std::cout << "SCORE: " << score << std::endl;
 
-       //camPos = this->cam->getPosition();
+       Vector griffPos = griffWO->getPosition();
 
-       //snowboardWO->moveRelative(Vector(5,0,-1.335));
-       snowboardWO->moveRelative(Vector(5, 0, -tan(DEGtoRAD * 15) * 5));
-       Vector boardPos = snowboardWO->getPosition();
+       float dropValue = isJumping || isFalling ? 0 : -tan(DEGtoRAD * 15) * 5;
+       griffWO->moveRelative(Vector(5, 0, dropValue));
+       griffPos = griffWO->getPosition();
 
-       griffWO->setPosition(boardPos.at(0), boardPos.at(1), boardPos.at(2)+5.5);
-       this->cam->setPosition(boardPos[0] - 20, boardPos[1], boardPos[2] + 10);
+       auto griffNormal = griffWO->getNormalDirection();
+       auto boardPos = griffPos + (griffNormal * -5);
+       snowboardWO->setPosition(boardPos);
+
+       this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
+       this->cam->setCameraLookAtPoint(griffPos);
+
+       if (isMovingRight) {
+           if (griffPos[1] <= -40) {
+               isMovingRight = false;
+
+               if (rightCount > 0) {
+                   rightCount = 0;
+
+                   snowboardWO->rotateToIdentity();
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+                   griffWO->rotateToIdentity();
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
+               }
+           }
+           else {
+               if (rightCount < 5) {
+                   griffWO->rotateAboutGlobalX(DEGtoRAD * 2.5);
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * 2.5);
+                   rightCount++;
+                   
+               }
+
+               griffWO->moveRelative(Vector(0, -2, 0));
+               griffPos = griffWO->getPosition();
+
+               auto griffNormal = griffWO->getNormalDirection();
+               auto boardPos = griffPos + (griffNormal * -5);
+               snowboardWO->setPosition(boardPos);
+
+               this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
+               this->cam->setCameraLookAtPoint(griffPos);
+
+               if (griffPos[1] == 40 || griffPos[1] == 0) {
+                   isMovingRight = false;
+                   rightCount = 0;
+
+                   snowboardWO->rotateToIdentity();
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+                   griffWO->rotateToIdentity();
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
+               }
+           }
+       }
+       else if (isMovingLeft) {
+           if (griffPos[1] >= 40) {
+               isMovingLeft = false;
+
+               if (leftCount > 0) {
+                   leftCount = 0;
+
+                   snowboardWO->rotateToIdentity();
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+                   griffWO->rotateToIdentity();
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
+               }
+           }
+           else {
+               if (leftCount < 5) {
+                   griffWO->rotateAboutGlobalX(DEGtoRAD * -2.5);
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -2.5);
+                   leftCount++;
+               }
+               griffWO->moveRelative(Vector(0, 2, 0));
+               griffPos = griffWO->getPosition();
+
+               auto griffNormal = griffWO->getNormalDirection();
+               auto boardPos = griffPos + (griffNormal * -5);
+               snowboardWO->setPosition(boardPos);
+
+               this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
+               this->cam->setCameraLookAtPoint(griffPos);
+
+               if (griffPos[1] == 0 || griffPos[1] == -40) {
+                   isMovingLeft = false;
+                   leftCount = 0;
+
+                   snowboardWO->rotateToIdentity();
+                   snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+                   griffWO->rotateToIdentity();
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
+               }
+           }
+           
+       }
+       
+       if (isJumping) {
+           std::cout << "isJumping\n" << griffPos[2] << " == " << jumpApex << std::endl;
+           soundDevice->stopAllSoundsOfSoundSource(glideSoundSrc);
+           if (isSliding) slideCount = 20;
+
+           if (griffPos[2] >= jumpApex) {
+               std::cout << "reached apex\n";
+               isJumping = false;
+               isFalling = true;
+               jumpCount = 0;
+           }
+           else {
+               if (jumpCount < 5) {
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * -2.5);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * -2.5);
+                   jumpCount++;
+               }
+
+               std::cout << "jumping\n";
+               griffWO->moveRelative(Vector(0, 0, 1));
+               griffPos = griffWO->getPosition();
+
+               auto griffNormal = griffWO->getNormalDirection();
+               auto boardPos = griffPos + (griffNormal * -5);
+               snowboardWO->setPosition(boardPos);
+
+               this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
+               //this->cam->setPosition(boardPos[0] - 40, this->cam->getPosition()[1], this->cam->getPosition()[2]);
+           }
+       }
+       else if (isFalling) {
+           std::cout << "isFalling\n";
+
+           if (isSliding) slideCount = 20;
+
+           WO* plane = worldLst->getWOByID(terrainPlanes[0]);
+           Vector planePos = plane->getPosition();
+           float griffDistFromCenter = planePos[0] - griffPos[0];
+           float heightDiffFromCenter = tan(DEGtoRAD * 15) * griffDistFromCenter;
+           std::cout << "INFO\n" << planePos << std::endl << griffDistFromCenter << std::endl << heightDiffFromCenter << std::endl << griffPos[2] << std::endl;
+           if (griffPos[2] <= planePos[2] + heightDiffFromCenter + 7.5) {
+               std::cout << "Stopped falling\n";
+               griffWO->setPosition(griffPos[0], griffPos[1], planePos[2] + heightDiffFromCenter + 7.5);
+               isFalling = false;
+               fallCount = 0;
+               std::string glideSound(ManagerEnvironmentConfiguration::getLMM() + "/sounds/glide.wav");
+               soundDevice->play2D(glideSound.c_str(), true);
+           }
+           else {
+               if (fallCount < 5) {
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 2.5);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 2.5);
+                   fallCount++;
+               }
+
+               griffWO->moveRelative(Vector(0, 0, -4));
+               griffPos = griffWO->getPosition();
+
+               auto griffNormal = griffWO->getNormalDirection();
+               auto boardPos = griffPos + (griffNormal * -5);
+               snowboardWO->setPosition(boardPos);
+
+               this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
+               //this->cam->setPosition(boardPos[0] - 40, this->cam->getPosition()[1], this->cam->getPosition()[2]);
+           }
+       }
+       
+       if (isSliding) {
+           if (slideCount < 30) {
+               if (slideCount < 5) {
+                   snowboardWO->rotateAboutRelY(DEGtoRAD * -9);
+                   //snowboardWO->rotateAboutGlobalY(DEGtoRAD * -9);
+                   griffWO->rotateAboutRelZ(DEGtoRAD * 9);
+                   //griffWO->rotateAboutRelY(DEGtoRAD * 90);
+                   //griffWO->rotateAboutGlobalY(DEGtoRAD * -9);
+               }
+               else if (slideCount < 10) {
+                   snowboardWO->rotateAboutRelY(DEGtoRAD * -9);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * -18);
+                   griffWO->rotateAboutRelZ(DEGtoRAD * 9);
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * -18);
+               }
+               else if (slideCount > 20 && slideCount < 25) {
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 9);
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 9);
+               }
+               else if (slideCount > 25) {
+                   snowboardWO->rotateAboutRelY(DEGtoRAD * 18);
+                   snowboardWO->rotateAboutGlobalY(DEGtoRAD * 9);
+                   griffWO->rotateAboutRelZ(DEGtoRAD * -18);
+                   griffWO->rotateAboutGlobalY(DEGtoRAD * 9);
+               }
+               slideCount++;
+
+               
+
+               //griffWO->setPosition(boardPos.at(0) - 12, boardPos.at(1), boardPos.at(2) + 6);
+               griffPos = griffWO->getPosition();
+               auto griffNormal = griffWO->getNormalDirection();
+               auto boardPos = griffPos + (griffNormal * -5);
+               snowboardWO->setPosition(boardPos);
+
+
+               this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
+               this->cam->setCameraLookAtPoint(griffPos);
+           }
+           else {
+               snowboardWO->rotateToIdentity();
+               snowboardWO->rotateAboutGlobalX(DEGtoRAD * -90);
+               snowboardWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+               snowboardWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+               griffWO->rotateToIdentity();
+               griffWO->rotateAboutGlobalY(DEGtoRAD * 15);
+
+               isSliding = false;
+               slideCount = 0;
+
+               griffPos = griffWO->getPosition();
+               snowboardWO->setPosition(griffPos[0], griffPos[1], griffPos[2] - 5.5);
+               this->cam->setPosition(griffPos[0] - 40, griffPos[1], griffPos[2] + 30);
+               this->cam->setCameraLookAtPoint(griffPos);
+           }        
+       }
+
    }
    if (isNewRender()) {
        updateTerrain();
    }
+
+   if (isColliding() && gameIsRunning) {
+       gameIsRunning = false;
+       std::string crash(ManagerEnvironmentConfiguration::getLMM() + "/sounds/VineBoom.wav");
+       soundDevice->play2D(crash.c_str(), false);
+       soundDevice->stopAllSoundsOfSoundSource(glideSoundSrc);
+   }
+
 }
 
 
@@ -144,12 +376,53 @@ void GLViewFinalProject::onKeyDown( const SDL_KeyboardEvent& key )
    if( key.keysym.sym == SDLK_0 )
       this->setNumPhysicsStepsPerRender( 1 );
 
-   if( key.keysym.sym == SDLK_1 )
+   if( key.keysym.sym == SDLK_1 || key.keysym.sym == SDLK_RETURN )
    {
+       std::string glideSound(ManagerEnvironmentConfiguration::getLMM() + "/sounds/glide.wav");
+       std::vector<std::string> songList;
+       int songIdx = 0;
+
+       songList.push_back(ManagerEnvironmentConfiguration::getLMM() + "/sounds/ChiliSnow.wav");
+       songList.push_back(ManagerEnvironmentConfiguration::getLMM() + "/sounds/CherubRock.wav");
+       songList.push_back(ManagerEnvironmentConfiguration::getLMM() + "/sounds/BugginOut.wav");
+       songList.push_back(ManagerEnvironmentConfiguration::getLMM() + "/sounds/Barracuda.wav");
+
+       songIdx = ((rand() % songList.size()) + 1)-1;
+
        gameIsRunning = true;
        //this->cam->setCameraLookDirection(Vector(1.0, 0.0, 0.0));
        this->cam->setPosition(-20, 3, 8);
        //this->cam->setCameraLookDirection(Vector(0, 0, 0));
+       soundDevice->play2D(glideSound.c_str(), true);
+       glideSoundSrc = soundDevice->getSoundSource(glideSound.c_str());
+       soundDevice->play2D(songList[songIdx].c_str(), false);
+   }
+
+   if (key.keysym.sym == SDLK_RIGHT)
+   {
+       isMovingRight = true;
+       isMovingLeft = false;
+   }
+
+   if (key.keysym.sym == SDLK_LEFT)
+   {
+       isMovingLeft = true;
+       isMovingRight = false;
+   }
+
+   if (key.keysym.sym == SDLK_UP)
+   {
+       if (!isFalling && !isJumping) {
+           jumpApex = snowboardWO->getPosition()[2] + 25;
+           isJumping = true;
+       }
+   }
+
+   if (key.keysym.sym == SDLK_DOWN)
+   {
+       if (!isSliding) {
+           isSliding = true;
+       }
    }
 }
 
@@ -157,6 +430,35 @@ void GLViewFinalProject::onKeyDown( const SDL_KeyboardEvent& key )
 void GLViewFinalProject::onKeyUp( const SDL_KeyboardEvent& key )
 {
    GLView::onKeyUp( key );
+}
+
+void GLViewFinalProject::onJoyButtonDown(const SDL_JoyButtonEvent& joy) {
+
+    GLView::onJoyButtonDown(joy);
+
+    if (joy.button == 0) {
+        isMovingLeft = true;
+        isMovingRight = false;
+    }
+    if (joy.button == 1) {
+        isMovingRight = true;
+        isMovingLeft = false;
+    }
+
+    if (joy.button == 2) {
+        if (!isFalling) {
+            jumpApex = snowboardWO->getPosition()[2] + 15;
+            isJumping = true;
+        }
+    }
+    if (joy.button == 3)
+    {
+        if (!isSliding) {
+            isSliding = true;
+        }
+    }
+
+
 }
 
 
@@ -337,8 +639,19 @@ void Aftr::GLViewFinalProject::loadMap()
    //Make a Dear Im Gui instance via the WOImGui in the engine... This calls
    //the default Dear ImGui demo that shows all the features... To create your own,
    //inherit from WOImGui and override WOImGui::drawImGui_for_this_frame(...) (among any others you need).
-   
+   WOImGui* gui = WOImGui::New(nullptr);
+   gui->setLabel("My Gui");
 
+   gui->subscribe_drawImGuiWidget(
+       [this, gui]() //this is a lambda, the capture clause is in [], the input argument list is in (), and the body is in {}
+       {
+           ImGui::Begin(" ");
+           std::string score_text = "SCORE " + std::to_string(score);
+           ImGui::Text(const_cast<char*>(score_text.c_str()));
+
+           ImGui::End();
+       });
+   this->worldLst->push_back(gui);
 
    initChunks();
 }
@@ -408,6 +721,32 @@ void GLViewFinalProject::updateTerrain() {
         }
     }
 
+    int xpos_modifier = -100;
+    int totalObstacles = 3;
+
+    for (int i = 0; i < ObstacleWOs[terrainPlanes.at(0)].size(); i++) { // shift furthest back obstacles to forward most plane
+        WO* obstacleWO = worldLst->getWOByID(ObstacleWOs[terrainPlanes.at(0)].at(i));
+        int laneNum = (rand() % 3) + 1;
+        int zShift = 0;
+
+        if (obstacleWO->getLabel() == "rock") zShift = -2;
+        else if (obstacleWO->getLabel() == "fence") zShift = -3;
+        else if (obstacleWO->getLabel() == "dumpster") zShift = -1;
+        else if (obstacleWO->getLabel() == "balloons") zShift = -2;
+
+        if (laneNum == 1) {
+            obstacleWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) + 40, (planePos.at(2) + 7 - xpos_modifier * 0.25) + zShift); // left lane
+        }
+        else if (laneNum == 2) {
+            obstacleWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1), (planePos.at(2) + 7 - xpos_modifier * 0.25) + zShift); // middle lane
+        }
+        else {
+            obstacleWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) - 40, (planePos.at(2) + 7 - xpos_modifier * 0.25) + zShift); // right lane
+        }
+        xpos_modifier = xpos_modifier + (400 / totalObstacles);
+    }
+
+
     int oldestPlaneID = terrainPlanes.at(0);
 
     for (int i = 0; i < terrainPlanes.size() - 1; i++) { // update terrain plain ID vector to match new positionings
@@ -418,28 +757,150 @@ void GLViewFinalProject::updateTerrain() {
 
 void GLViewFinalProject::addChunksObjs(int ID) {
     std::string tree(ManagerEnvironmentConfiguration::getLMM() + "/models/terrain/lowpolytree.obj");
+    std::string rock(ManagerEnvironmentConfiguration::getLMM() + "/models/rock/rock.fbx");
+    std::string balloons(ManagerEnvironmentConfiguration::getLMM() + "/models/balloons/13498_Balloon_Arch_v1_l2.obj");
+    std::string dumpster(ManagerEnvironmentConfiguration::getSMM() + "/models/dumpster-big.wrl");
+    std::string fence(ManagerEnvironmentConfiguration::getSMM() + "/models/picketfence.wrl");
+
     WO* plane = worldLst->getWOByID(ID);
     Vector planePos = plane->getPosition();
     srand(time(0));
 
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 50; i++) { // trees
         int treeScale = (rand() % 3) + 6;
         WO* treeWO = WO::New(tree, Vector(treeScale, treeScale, treeScale), MESH_SHADING_TYPE::mstFLAT);
+        auto xpos_modifier = ((rand() % 401) - 200);
         if (i % 2 == 0) {
-            auto xpos_modifier = ((rand() % 401) - 200);
             treeWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) + ((rand() % 131) + 70), planePos.at(2) + 7 - xpos_modifier * 0.25); // left side trees
         }
         else {
-            auto xpos_modifier = ((rand() % 401) - 200);
             treeWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) + ((rand() % 131) - 200), planePos.at(2) + 7 - xpos_modifier * 0.25); // right side trees
         }
         treeWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
         terrainWOs[ID].push_back(treeWO->getID()); // trees to terrain list
         worldLst->push_back(treeWO);
     }
+
+
+
+    int xpos_modifier = -100;
+    int totalObstacles = 3;
+    for (int i = 0; i < totalObstacles; i++) { // obstacles
+
+        int objType = (rand() % 10) + 1;
+        int laneNum = (rand() % 3) + 1;
+        int zShift = 0;
+        WO* obstacleWO;
+
+        if (objType <= 4) {
+            obstacleWO = WO::New(rock, Vector(10.0, 10.0, 10.0), MESH_SHADING_TYPE::mstFLAT);
+            obstacleWO->setLabel("rock");
+            zShift = -2;
+        }
+        else if (objType > 4 && objType <= 7) {
+            obstacleWO = WO::New(fence, Vector(25.0, 25.0, 25.0), MESH_SHADING_TYPE::mstFLAT);
+            obstacleWO->setLabel("fence");
+            zShift = -3;
+        }
+        else if (objType > 7 && objType <= 9) {
+            obstacleWO = WO::New(dumpster, Vector(15.0, 15.0, 15.0), MESH_SHADING_TYPE::mstFLAT);
+            obstacleWO->rotateAboutGlobalY(DEGtoRAD * 180);
+            obstacleWO->rotateAboutGlobalZ(DEGtoRAD * 90);
+            obstacleWO->setLabel("dumpster");
+            zShift = -1;
+        }
+        else {
+            obstacleWO = WO::New(balloons, Vector(0.2, 0.2, 0.2), MESH_SHADING_TYPE::mstFLAT);
+            obstacleWO->rotateAboutGlobalZ(DEGtoRAD * -90);
+            obstacleWO->rotateAboutGlobalY(DEGtoRAD * 90);
+            obstacleWO->setLabel("balloons");
+            zShift = -2;
+        }
+
+        if (laneNum == 2 && terrainPlanes.size() < 2) laneNum = 1;
+
+        if (laneNum == 1) {
+            obstacleWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) + 40, (planePos.at(2) + 7 - xpos_modifier * 0.25) + zShift); // left lane
+        }
+        else if (laneNum == 2) {
+            obstacleWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1), (planePos.at(2) + 7 - xpos_modifier * 0.25) + zShift); // middle lane
+        }
+        else {
+            obstacleWO->setPosition(planePos.at(0) + xpos_modifier, planePos.at(1) - 40, (planePos.at(2) + 7 - xpos_modifier * 0.25) + zShift); // right lane
+        }
+
+        obstacleWO->renderOrderType = RENDER_ORDER_TYPE::roOPAQUE;
+        ObstacleWOs[ID].push_back(obstacleWO->getID()); // obstacles to terrain list
+        this->worldLst->push_back(obstacleWO);
+        xpos_modifier = xpos_modifier + (400 / totalObstacles);
+    }
+
 }
 
 bool GLViewFinalProject::isNewRender() {
     WO* oldChunk = worldLst->getWOByID(terrainPlanes.at(1));
     return this->cam->getPosition().at(0) > oldChunk->getPosition().at(0);
+}
+
+bool GLViewFinalProject::isColliding() {
+
+    int currentPlane = getCurrentPlane();
+    if (currentPlane == -1) return true; // unable to locate current plane therefore end game
+
+    auto grifPos = griffWO->getPosition();
+
+    for (int i = 0; i < ObstacleWOs[currentPlane].size(); i++) { // check all obstacles in current plane
+        WO* obstacleWO = worldLst->getWOByID(ObstacleWOs[currentPlane].at(i));
+        auto obsPos = obstacleWO->getPosition();
+
+        if (obstacleWO->getLabel() == "rock") {
+            if ((grifPos[0] > obsPos[0] - 15 && grifPos[0] < obsPos[0] + 15) &&    // grif is within bounding xBox
+                (grifPos[1] > obsPos[1] - 15 && grifPos[1] < obsPos[1] + 15) &&    // grif is within bounding yBox
+                (grifPos[2] > obsPos[2] - 15 && grifPos[2] < obsPos[2] + 15))      // grif is within bounding zBox
+            {
+                if (gameIsRunning) std::cout << "COLLISION - ROCK\n";
+                return true;
+            }
+        }
+        else if (obstacleWO->getLabel() == "fence") {
+            if ((grifPos[0] > obsPos[0] - 5 && grifPos[0] < obsPos[0] + 5) &&
+                (grifPos[1] > obsPos[1] - 20 && grifPos[1] < obsPos[1] + 20) &&
+                (grifPos[2] > obsPos[2] - 18 && grifPos[2] < obsPos[2] + 18))
+            {
+                if (gameIsRunning) std::cout << "COLLISION - FENCE\n";
+                return true;
+            }
+        }
+        else if (obstacleWO->getLabel() == "dumpster") {
+            if ((grifPos[0] > obsPos[0] - 30 && grifPos[0] < obsPos[0] + 30) &&
+                (grifPos[1] > obsPos[1] - 15 && grifPos[1] < obsPos[1] + 15) &&
+                (grifPos[2] > obsPos[2] - 20 && grifPos[2] < obsPos[2] + 20))
+            {
+                if (gameIsRunning) std::cout << "COLLISION - DUMPSTER\n";
+                return true;
+            }
+        }
+        else if (obstacleWO->getLabel() == "balloons") {
+            if ((grifPos[0] > obsPos[0] - 5 && grifPos[0] < obsPos[0] + 5) &&
+                (grifPos[1] > obsPos[1] - 30 && grifPos[1] < obsPos[1] + 30) &&
+                (grifPos[2] > obsPos[2] + 2 && grifPos[2] < obsPos[2] + 5))
+            {
+                if (gameIsRunning) std::cout << "COLLISION - BALOONS\n";
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+int GLViewFinalProject::getCurrentPlane() {
+
+    int grifXPos = griffWO->getPosition().at(0);
+    for (int i = 0; i < terrainPlanes.size(); i++) {
+        float terrainXPos = worldLst->getWOByID(terrainPlanes[i])->getPosition().at(0);
+        if (grifXPos > terrainXPos - 200 && grifXPos < terrainXPos + 200) return terrainPlanes[i];
+    }
+
+    return -1;
 }

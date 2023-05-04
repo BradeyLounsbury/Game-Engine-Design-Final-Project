@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GLView.h"
+#include "irrKlang.h"
 
 namespace Aftr
 {
@@ -32,10 +33,13 @@ public:
    virtual void onMouseMove( const SDL_MouseMotionEvent& e );
    virtual void onKeyDown( const SDL_KeyboardEvent& key );
    virtual void onKeyUp( const SDL_KeyboardEvent& key );
+   virtual void onJoyButtonDown(const SDL_JoyButtonEvent& joy);
    void initChunks();
    void updateTerrain();
    void addChunksObjs(int ID);
    bool isNewRender();
+   bool isColliding();
+   int  getCurrentPlane();
 
 protected:
    GLViewFinalProject( const std::vector< std::string >& args );
@@ -43,9 +47,25 @@ protected:
 
    std::vector<int> terrainPlanes;
    std::map<int, std::vector<int>> terrainWOs;
+   std::map<int, std::vector<int>> ObstacleWOs;
    bool gameIsRunning = false;
+   bool isMovingLeft = false;
+   int leftCount = 0;
+   bool isMovingRight = false;
+   int rightCount = 0;
+   bool isJumping = false;
+   int jumpCount = 0;
+   bool isFalling = false;
+   int fallCount = 0;
+   bool isSliding = false;
+   int slideCount = 0;
+   float jumpApex = 0;
+   int score = 0;
    WO* snowboardWO;
    WO* griffWO;
+
+   irrklang::ISoundEngine* soundDevice = irrklang::createIrrKlangDevice();
+   irrklang::ISoundSource* glideSoundSrc;
 };
 
 /** \} */

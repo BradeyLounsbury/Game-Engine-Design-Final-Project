@@ -57,6 +57,8 @@ endif()
 #This section is already populated with default values from: ../../../include/cmake/aftrModuleCommonProjectIncludesAndLibs.cmake
 IF( WIN32 ) #MSVC Compiler library paths
    TARGET_LINK_LIBRARIES( ${PROJECT_NAME} PRIVATE
+		optimized "${AFTR_USERLAND_LIB_PATH}/irrKlang.lib"
+		debug "${AFTR_USERLAND_LIB_PATH}/irrKlang.lib"
                 #optimized "${AFTR_USERLAND_LIB_PATH}/mySampleLibraryNeededInThisModule.lib"
                 #    debug "${AFTR_USERLAND_LIB_PATH}/mySampleLibraryNeededInThisModule_debug.lib"
                 #optimized "${CMAKE_SOURCE_DIR}/lib${AFTR_NBITS}/myLocalLib.lib" #Located in ../lib64/ or ../lib32/
@@ -80,6 +82,7 @@ ENDIF()
 TARGET_INCLUDE_DIRECTORIES( ${PROJECT_NAME} PRIVATE 
                            #"${AFTR_USR_INCLUDE_DIR}"
                            #"${CMAKE_SOURCE_DIR}/../my3rdPartyLib/include/"
+		           "${CMAKE_SOURCE_DIR}/../include/irrKlang"
                           )
 
 
