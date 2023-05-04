@@ -679,7 +679,7 @@ void GLViewFinalProject::updateTerrain() {
     int xpos_modifier = -100;
 
     ObstacleWOs[terrainPlanes.back()].clear();
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
         int obj = rand() % 4;
         int laneNum = rand() % 3;
         bool isDouble = (rand() % 2 == 0);
@@ -774,10 +774,105 @@ void GLViewFinalProject::updateTerrain() {
         
         if (isDouble) {
             int obj2 = rand() % 4;
-            int laneNum2 = rand() % 2;
+            int laneNum2;
 
+            // check what lane obj is in and pick another lane
+            if (laneNum == 0) {
+                rand() % 2 ? laneNum2 = 1 : laneNum2 = 2;
+            }
+            else if (laneNum == 1) {
+                rand() % 2 ? laneNum2 = 0 : laneNum2 = 2;
+            }
+            else {
+                rand() % 2 ? laneNum2 = 0 : laneNum2 = 1;
+            }
+
+            if (obj2 == 0) { //rock
+                WO* rock = rockWOs[currentRockWO];
+                ObstacleWOs[terrainPlanes.back()].push_back(rock->getID());
+
+                if (laneNum2 == 0) {
+                    rock->setPosition(planePos[0] + xpos_modifier, planePos[1] + 40, planePos[2] + heightDiffFromCenter + 5);
+                }
+                else if (laneNum2 == 1) {
+                    rock->setPosition(planePos[0] + xpos_modifier, planePos[1], planePos[2] + heightDiffFromCenter + 5);
+                }
+                else {
+                    rock->setPosition(planePos[0] + xpos_modifier, planePos[1] - 40, planePos[2] + heightDiffFromCenter + 5);
+                }
+
+                if (currentRockWO == rockWOs.size() - 1) {
+                    currentRockWO = 0;
+                }
+                else {
+                    currentRockWO++;
+                }
+            }
+            else if (obj2 == 1) { //fence
+                WO* fence = fenceWOs[currentFenceWO];
+                ObstacleWOs[terrainPlanes.back()].push_back(fence->getID());
+
+                if (laneNum2 == 0) {
+                    fence->setPosition(planePos[0] + xpos_modifier, planePos[1] + 40, planePos[2] + heightDiffFromCenter + 6);
+                }
+                else if (laneNum2 == 1) {
+                    fence->setPosition(planePos[0] + xpos_modifier, planePos[1], planePos[2] + heightDiffFromCenter + 6);
+                }
+                else {
+                    fence->setPosition(planePos[0] + xpos_modifier, planePos[1] - 40, planePos[2] + heightDiffFromCenter + 6);
+                }
+
+                if (currentFenceWO == fenceWOs.size() - 1) {
+                    currentFenceWO = 0;
+                }
+                else {
+                    currentFenceWO++;
+                }
+            }
+            else if (obj2 == 2) { //dumpster
+                WO* dumpster = dumpsterWOs[currentDumpsterWO];
+                ObstacleWOs[terrainPlanes.back()].push_back(dumpster->getID());
+
+                if (laneNum2 == 0) {
+                    dumpster->setPosition(planePos[0] + xpos_modifier, planePos[1] + 40, planePos[2] + heightDiffFromCenter + 4);
+                }
+                else if (laneNum2 == 1) {
+                    dumpster->setPosition(planePos[0] + xpos_modifier, planePos[1], planePos[2] + heightDiffFromCenter + 4);
+                }
+                else {
+                    dumpster->setPosition(planePos[0] + xpos_modifier, planePos[1] - 40, planePos[2] + heightDiffFromCenter + 4);
+                }
+
+                if (currentDumpsterWO == dumpsterWOs.size() - 1) {
+                    currentDumpsterWO = 0;
+                }
+                else {
+                    currentDumpsterWO++;
+                }
+            }
+            else {  //balloon
+                WO* balloon = balloonWOs[currentBalloonWO];
+                ObstacleWOs[terrainPlanes.back()].push_back(balloon->getID());
+
+                if (laneNum2 == 0) {
+                    balloon->setPosition(planePos[0] + xpos_modifier, planePos[1] + 40, planePos[2] + heightDiffFromCenter + 5);
+                }
+                else if (laneNum2 == 1) {
+                    balloon->setPosition(planePos[0] + xpos_modifier, planePos[1], planePos[2] + heightDiffFromCenter + 5);
+                }
+                else {
+                    balloon->setPosition(planePos[0] + xpos_modifier, planePos[1] - 40, planePos[2] + heightDiffFromCenter + 5);
+                }
+
+                if (currentBalloonWO == balloonWOs.size() - 1) {
+                    currentBalloonWO = 0;
+                }
+                else {
+                    currentBalloonWO++;
+                }
+            }
         }
-        xpos_modifier += 100;
+        xpos_modifier += 200;
     }
 
     //for (int i = 0; i < ObstacleWOs[terrainPlanes.at(0)].size(); i++) { // shift furthest back obstacles to forward most plane
