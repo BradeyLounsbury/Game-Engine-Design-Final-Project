@@ -301,15 +301,6 @@ void GLViewFinalProject::updateWorld()
                }
                slideCount++;
 
-               
-
-               /*WO* plane = worldLst->getWOByID(terrainPlanes[0]);
-               Vector planePos = plane->getPosition();
-               griffPos = griffWO->getPosition();
-               float griffDistFromCenter = planePos[0] - griffPos[0];
-               float heightDiffFromCenter = tan(DEGtoRAD * 15) * griffDistFromCenter;
-               griffWO->setPosition(griffPos[0], griffPos[1], planePos[2] + heightDiffFromCenter + 5.5);*/
-
                auto griffNormal = griffWO->getNormalDirection();
                auto boardPos = griffPos + (griffNormal * -5);
                snowboardWO->setPosition(boardPos);
